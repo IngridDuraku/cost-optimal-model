@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import zipf
-from const import CPU_H
+from ..const import CPU_H
 
 
 def distr_maker(shape, size):
