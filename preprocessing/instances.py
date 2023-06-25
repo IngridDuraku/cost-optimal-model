@@ -32,8 +32,8 @@ def CPU_brand(row):
         return '?'
 
 def aws_data_historical_new_load():
-    dates = pd.read_csv('../data/historical-data-times.csv')
-    data = pd.read_csv('../data/historical-data-raw.csv', skipinitialspace=True)
+    dates = pd.read_csv('data/historical-data-times.csv')
+    data = pd.read_csv('data/historical-data-raw.csv', skipinitialspace=True)
 
     # translation of sql query where clause
     data.dropna(subset=['vCPU'], inplace=True)
@@ -121,7 +121,7 @@ def aws_data_normalize(data):
     # cleanup function
     data = aws_data_cleanup(data)
     # join  with commits
-    commits = pd.read_csv('../data/ec2-instances.info-commit-mapping.csv')
+    commits = pd.read_csv('data/ec2-instances.info-commit-mapping.csv')
     data = data.join(commits.set_index('join.entry'), on='meta_join_entry', how='inner')
     return data
 
