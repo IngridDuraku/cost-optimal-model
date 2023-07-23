@@ -17,15 +17,15 @@ def distr_maker(shape, size):
 def model_distr_hsplit(distr, lim):
     dist_low = np.minimum(distr, lim)
     dist_high = np.maximum(distr - dist_low, 0)
-    return {'low': dist_low, 'high': dist_high}
+    return {'initial': dist_low, 'working': dist_high}
 
 
 def model_distr_split_fn(distr, split_first_read):
     if split_first_read:
         split_dist = model_distr_hsplit(distr, 1)
     else:
-        split_dist = [np.zeros(len(distr)), distr] # ToDO: Fix
-    return {"initial": split_dist['low'], "working": split_dist['high']}
+        split_dist = {"initial": np.zeros(len(distr)), "working": distr}
+    return split_dist
 
 
 def calc_groups(sizes, distr_len):
@@ -70,4 +70,18 @@ def model_distr_pack(bins, distr):
         )
         res = pd.concat([res, next_], ignore_index=True).fillna(0)
 
-    return res
+    return sanitize_packing(res)
+
+
+def model_make_scaling(p, n):
+    return (1 - p) + (p / n)
+
+
+def sanitize_packing(packed_df):
+    cols = {"data_mem", "data_sto", "data_s3"}
+    for col in cols:
+        if col not in packed_df.columns:
+            packed_df[col] = 0
+    packed_df.round(decimals=0)
+
+    return packed_df
