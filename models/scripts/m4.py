@@ -65,25 +65,25 @@ def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale):
     result["id"] = result["id_name"] + "/" + str(count)
     result["cost_usdph"] = (inst["cost_usdph"] * count).round(3)
 
-    result["read_cache_load"] = sum(distr_cache["initial"]).round()
-    result["read_cache_mem"] = mem_read_distribution['data_mem'].round()
-    result["read_cache_sto"] = mem_read_distribution['data_sto'].round()
-    result["read_cache_s3"] = mem_read_distribution['data_s3'].round()
+    result["read_cache_load"] = sum(distr_cache["initial"]).round(2)
+    result["read_cache_mem"] = mem_read_distribution['data_mem'].round(2)
+    result["read_cache_sto"] = mem_read_distribution['data_sto'].round(2)
+    result["read_cache_s3"] = mem_read_distribution['data_s3'].round(2)
 
-    result["read_spool_mem"] = spool_read_distribution['data_mem'].round()
-    result["read_spool_sto"] = spool_read_distribution['data_sto'].round()
-    result["read_spool_s3"] = spool_read_distribution['data_s3'].round()
+    result["read_spool_mem"] = spool_read_distribution['data_mem'].round(2)
+    result["read_spool_sto"] = spool_read_distribution['data_sto'].round(2)
+    result["read_spool_s3"] = spool_read_distribution['data_s3'].round(2)
 
-    result["rw_mem"] = result["read_cache_mem"] + 2 * result["read_spool_mem"].round()
-    result["rw_sto"] = result["read_cache_sto"] + 2 * result["read_cache_sto"].round()
-    result["rw_s3"] = result["read_cache_s3"] + 2 * result["read_cache_s3"].round()
+    result["rw_mem"] = result["read_cache_mem"] + 2 * result["read_spool_mem"].round(2)
+    result["rw_sto"] = result["read_cache_sto"] + 2 * result["read_spool_sto"].round(2)
+    result["rw_s3"] = result["read_cache_s3"] + 2 * result["read_spool_s3"].round(2)
 
     result["rw_xchg"] = 0 if count == 0 else 2 * spool_sum
 
     result["stat_read_spool"] = spool_sum
     result["stat_read_work"] = round(sum(distr_cache["working"]))
 
-    result["time_cpu"] = (CPU_H * 3600 / inst['calc_cpu_real']) * inv_eff
+    result["time_cpu"] = ((CPU_H * 3600 / inst['calc_cpu_real']) * scale).round(2)
     result["time_mem"] = ((result["rw_mem"] / inst["calc_mem_speed"]) * inv_eff).round(2)
     result["time_sto"] = ((result["rw_sto"] / inst["calc_sto_speed"]) * inv_eff).round(2)
     result["time_s3"] = ((result["rw_s3"] / inst["calc_s3_speed"]) * inv_eff).round(2)
@@ -95,6 +95,8 @@ def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale):
     result["stat_time_max"] = result[["time_s3", "time_sto", "time_mem", "time_xchg", "time_load", "time_cpu"]].max(
         axis=1
     )
+
+    result["scale"] = inv_eff
 
     return result
 

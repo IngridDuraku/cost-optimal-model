@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from scipy.stats import zipf
+from scipy.stats import zipfian
 
 
 def distr_maker(shape, size):
@@ -9,7 +9,7 @@ def distr_maker(shape, size):
     if size <= 1:
         return [size]
 
-    distr = zipf.pmf(np.arange(1, size+1), shape)
+    distr = zipfian.pmf(np.arange(1, size+1), shape, size+1)
     normd = distr / np.sum(distr) * size
     return normd.tolist()
 
@@ -82,6 +82,15 @@ def sanitize_packing(packed_df):
     for col in cols:
         if col not in packed_df.columns:
             packed_df[col] = 0
-    packed_df.round(decimals=0)
+    packed_df.round(decimals=2)
 
     return packed_df
+
+
+def calc_cost(time_df):
+    result = []
+    for instance in time_df:
+        instance["stat_price_sum"] = round(instance["stat_time_sum"] * instance["cost_usdph"] / 3600, 3)
+        result.append(instance.sort_values(by="stat_price_sum", ascending=True))
+
+    return result
