@@ -1,11 +1,10 @@
 import pandas as pd
 
-from models.const import (CPU_H, CACHE_SKEW, FIRST_READ_FROM_S3, TOTAL_READS, SPOOLING_READ_SUM, SPOOLING_SKEW,
-                        MAX_INSTANCE_COUNT, SCALING_PARAM)
+from models.const import MAX_INSTANCE_COUNT
 from models.utils import model_distr_pack, distr_maker, model_distr_split_fn, model_make_scaling
 
 
-def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale):
+def calc_time_for_config_m4(inst, query, count, distr_cache, distr_spooling, scale):
     inst = inst.reset_index()
     bins_cache = {
         'data_mem': pd.DataFrame(
@@ -83,7 +82,7 @@ def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale):
     result["stat_read_spool"] = spool_sum
     result["stat_read_work"] = round(sum(distr_cache["working"]))
 
-    result["time_cpu"] = ((CPU_H * 3600 / inst['calc_cpu_real']) * scale).round(2)
+    result["time_cpu"] = ((query["cpu_h"] * 3600 / inst['calc_cpu_real']) * scale).round(2)
     result["time_mem"] = ((result["rw_mem"] / inst["calc_mem_speed"]) * inv_eff).round(2)
     result["time_sto"] = ((result["rw_sto"] / inst["calc_sto_speed"]) * inv_eff).round(2)
     result["time_s3"] = ((result["rw_s3"] / inst["calc_s3_speed"]) * inv_eff).round(2)
@@ -101,21 +100,23 @@ def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale):
     return result
 
 
-def calc_time_m4(instances):
+def calc_time_m4(instances, query):
     distr_caching_precomputed = [
-        distr_maker(shape=CACHE_SKEW, size=round(TOTAL_READS / n))
+        # why not apply the scale here
+        distr_maker(shape=query["cache_skew"], size=round(query["total_reads"] / n))
         for n in range(1, MAX_INSTANCE_COUNT + 1)
     ]
-    distr_cache = list(map(lambda x: model_distr_split_fn(x, FIRST_READ_FROM_S3), distr_caching_precomputed))
+    distr_cache = list(map(lambda x: model_distr_split_fn(x, query["first_read_from_s3"]), distr_caching_precomputed))
 
+    spooling_read_sum = query["total_reads"] * query["spooling_fraction"]
     spooling_distr = [
-        0 if round(SPOOLING_READ_SUM/n) < 1 else distr_maker(shape=SPOOLING_SKEW, size=round(SPOOLING_READ_SUM / n))
+        0 if round(spooling_read_sum/n) < 1 else distr_maker(shape=query["spooling_skew"], size=round(spooling_read_sum / n))
         for n in range(1, MAX_INSTANCE_COUNT + 1)
     ]
 
-    scaling = [model_make_scaling(SCALING_PARAM, n) for n in range(1, MAX_INSTANCE_COUNT+1)]
+    scaling = [model_make_scaling(query["scaling_param"], n) for n in range(1, MAX_INSTANCE_COUNT+1)]
     result = [
-        calc_time_for_config_m4(instances, i, distr_cache[i-1], spooling_distr[i-1], scaling[i-1])
+        calc_time_for_config_m4(instances, query, i, distr_cache[i-1], spooling_distr[i-1], scaling[i-1])
         for i in range(1, MAX_INSTANCE_COUNT+1)
     ]
 

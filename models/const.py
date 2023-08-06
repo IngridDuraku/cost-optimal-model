@@ -14,3 +14,24 @@ SPOOLING_READ_SUM = TOTAL_READS * SPOOLING_FRACTION
 # scaling
 SCALING_PARAM = 0.98  # - portion of the workload that can be parallelized
 MAX_INSTANCE_COUNT = 32
+
+QUERIES = [
+    {
+        "cpu_h": 20,
+        "total_reads": 800,
+        "cache_skew": 0.1,
+        "first_read_from_s3": False,
+        "spooling_fraction": 0.2,
+        "spooling_skew": 0.1,
+        "scaling_param": 0.98,
+    },
+    {
+        "cpu_h": 1,
+        "total_reads": 16000,
+        "cache_skew": 0.9,
+        "first_read_from_s3": False,
+        "spooling_fraction": 0.1,
+        "spooling_skew": 0.1,
+        "scaling_param": 0.95,
+    },
+]

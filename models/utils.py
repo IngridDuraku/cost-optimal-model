@@ -9,7 +9,7 @@ def distr_maker(shape, size):
     if size <= 1:
         return [size]
 
-    distr = zipfian.pmf(np.arange(1, size+1), shape, size+1)
+    distr = zipfian.pmf(np.arange(1, size+1), shape, size)
     normd = distr / np.sum(distr) * size
     return normd.tolist()
 
