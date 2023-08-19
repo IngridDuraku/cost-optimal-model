@@ -37,7 +37,7 @@ def calc_groups(sizes, distr_len):
         return [sizes.index[1]] * (min(sizes[1], distr_len) - sizes[0])
 
 
-def distr_pack_helper(bins, distr):
+def distr_pack_helper(bins, distr, index):
     distr_len = len(distr)
     bins = bins.sort_values(by='prio', ascending=False)
     bins['acc_size'] = bins['size'].cumsum().astype('int32')
@@ -51,7 +51,10 @@ def distr_pack_helper(bins, distr):
         'group': res
     }).groupby('group').sum().transpose()
 
-    return result.reset_index()
+    result['index'] = index
+    result.set_index('index', inplace=True)
+
+    return result
 
 
 def model_distr_pack(bins, distr):
@@ -61,14 +64,16 @@ def model_distr_pack(bins, distr):
         next_ = distr_pack_helper(
             bins=pd.DataFrame(
                 data={
-                    'prio': [bins['data_mem']['prio'][i], bins['data_sto']['prio'][i], bins['data_s3']['prio'][i]],
-                    'size': [bins['data_mem']['size'][i], bins['data_sto']['size'][i], bins['data_s3']['size'][i]],
+                    'prio': [bins['data_mem']['prio'].iloc[i], bins['data_sto']['prio'].iloc[i], bins['data_s3']['prio'].iloc[i]],
+                    'size': [bins['data_mem']['size'].iloc[i], bins['data_sto']['size'].iloc[i], bins['data_s3']['size'].iloc[i]],
                 },
                 index=['data_mem', 'data_sto', 'data_s3']
             ),
-            distr=distr
+            distr=distr,
+            index=bins['data_mem'].index[i]
         )
-        res = pd.concat([res, next_], ignore_index=True).fillna(0)
+
+        res = pd.concat([res, next_]).fillna(0)
 
     return sanitize_packing(res)
 

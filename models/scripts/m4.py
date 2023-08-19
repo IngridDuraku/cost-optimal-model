@@ -5,7 +5,7 @@ from models.utils import model_distr_pack, distr_maker, model_distr_split_fn, mo
 
 
 def calc_time_for_config_m4(inst, query, count, distr_cache, distr_spooling, scale):
-    inst = inst.reset_index()
+    #inst = inst.reset_index()
     bins_cache = {
         'data_mem': pd.DataFrame(
             data={'size': inst['calc_mem_caching'].round(decimals=0), 'prio': inst['calc_mem_speed']}),
@@ -37,10 +37,14 @@ def calc_time_for_config_m4(inst, query, count, distr_cache, distr_spooling, sca
             "cost_usdph",
             "read_cache_load",
             "read_cache_mem",
+            "calc_mem_caching", # temp
             "read_cache_sto",
+            "calc_sto_caching", # temp
             "read_cache_s3",
             "read_spool_mem",
+            "calc_mem_spooling", # temp
             "read_spool_sto",
+            "calc_sto_spooling", # temp
             "read_spool_s3",
             "rw_mem",
             "rw_sto",
@@ -55,9 +59,10 @@ def calc_time_for_config_m4(inst, query, count, distr_cache, distr_spooling, sca
             "time_xchg",
             "stat_time_sum",
             "stat_time_max",
-            "stat_time_period"
         ]
     )
+
+    result[["calc_mem_caching","calc_sto_caching","calc_mem_spooling","calc_sto_spooling"]] = inst[["calc_mem_caching","calc_sto_caching","calc_mem_spooling","calc_sto_spooling"]]
 
     result["id_name"] = inst["id"]
     result["count"] = count
@@ -82,7 +87,7 @@ def calc_time_for_config_m4(inst, query, count, distr_cache, distr_spooling, sca
     result["stat_read_spool"] = spool_sum
     result["stat_read_work"] = round(sum(distr_cache["working"]))
 
-    result["time_cpu"] = ((query["cpu_h"] * 3600 / inst['calc_cpu_real']) * scale).round(2)
+    result["time_cpu"] = round((query["cpu_h"] * 3600 / query['per_server_cores']) * scale, 2)
     result["time_mem"] = ((result["rw_mem"] / inst["calc_mem_speed"]) * inv_eff).round(2)
     result["time_sto"] = ((result["rw_sto"] / inst["calc_sto_speed"]) * inv_eff).round(2)
     result["time_s3"] = ((result["rw_s3"] / inst["calc_s3_speed"]) * inv_eff).round(2)
@@ -110,7 +115,7 @@ def calc_time_m4(instances, query):
 
     spooling_read_sum = query["total_reads"] * query["spooling_fraction"]
     spooling_distr = [
-        0 if round(spooling_read_sum/n) < 1 else distr_maker(shape=query["spooling_skew"], size=round(spooling_read_sum / n))
+        [] if round(spooling_read_sum/n) < 1 else distr_maker(shape=query["spooling_skew"], size=round(spooling_read_sum / n))
         for n in range(1, MAX_INSTANCE_COUNT + 1)
     ]
 
