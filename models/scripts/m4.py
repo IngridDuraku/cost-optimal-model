@@ -5,21 +5,21 @@ from models.utils import model_distr_pack, distr_maker, model_distr_split_fn, mo
 
 
 def calc_time_for_config_m4(inst, query, count, distr_cache, distr_spooling, scale):
-    #inst = inst.reset_index()
+
     bins_cache = {
         'data_mem': pd.DataFrame(
-            data={'size': (inst['calc_mem_caching'] - inst['used_mem_caching']).round(decimals=0), 'prio': inst['calc_mem_speed']}),
+            data={'size': round(query['mem_request']), 'prio': inst['calc_mem_speed']}),
         'data_sto': pd.DataFrame(
-            data={'size': (inst['calc_sto_caching'] - inst['used_sto_caching']).round(decimals=0), 'prio': inst['calc_sto_speed']}),
+            data={'size': round(query['sto_request']), 'prio': inst['calc_sto_speed']}),
         'data_s3': pd.DataFrame(
             data={'size': [len(distr_cache['working'])] * len(inst), 'prio': inst['calc_net_speed']})
     }
 
     bins_spooling = {
         'data_mem': pd.DataFrame(
-            data={'size': (inst['calc_mem_spooling'] - inst['used_mem_spooling']).round(decimals=0), 'prio': inst['calc_mem_speed']}),
+            data={'size': round(query['mem_request']), 'prio': inst['calc_mem_speed']}),
         'data_sto': pd.DataFrame(
-            data={'size': (inst['calc_sto_spooling'] - inst['used_sto_spooling']).round(decimals=0), 'prio': inst['calc_sto_speed']}),
+            data={'size': round(query['sto_request']), 'prio': inst['calc_sto_speed']}),
         'data_s3': pd.DataFrame(data={'size': [len(distr_spooling)] * len(inst), 'prio': inst['calc_net_speed']})
     }
 
@@ -31,24 +31,14 @@ def calc_time_for_config_m4(inst, query, count, distr_cache, distr_spooling, sca
 
     result = pd.DataFrame(
         columns=[
-            "id_name",
             "count",
-            "id",
             "cost_usdph",
             "read_cache_load",
             "read_cache_mem",
-            "used_mem_caching",
-            "calc_mem_caching", # temp
             "read_cache_sto",
-            "used_sto_caching",
-            "calc_sto_caching", # temp
             "read_cache_s3",
             "read_spool_mem",
-            "used_mem_spooling",
-            "calc_mem_spooling", # temp
             "read_spool_sto",
-            "used_sto_spooling",
-            "calc_sto_spooling", # temp
             "read_spool_s3",
             "rw_mem",
             "rw_sto",
@@ -63,14 +53,11 @@ def calc_time_for_config_m4(inst, query, count, distr_cache, distr_spooling, sca
             "time_xchg",
             "stat_time_sum",
             "stat_time_max",
-        ]
+        ],
+        index=inst.index
     )
 
-    result[["calc_mem_caching","calc_sto_caching","calc_mem_spooling","calc_sto_spooling"]] = inst[["calc_mem_caching","calc_sto_caching","calc_mem_spooling","calc_sto_spooling"]]
-
-    result["id_name"] = inst["id"]
     result["count"] = count
-    result["id"] = result["id_name"] + "/" + str(count)
     result["cost_usdph"] = (inst["cost_usdph"] * count).round(3)
 
     result["read_cache_load"] = sum(distr_cache["initial"]).round(2)
@@ -81,11 +68,6 @@ def calc_time_for_config_m4(inst, query, count, distr_cache, distr_spooling, sca
     result["read_spool_mem"] = spool_read_distribution['data_mem'].round(2)
     result["read_spool_sto"] = spool_read_distribution['data_sto'].round(2)
     result["read_spool_s3"] = spool_read_distribution['data_s3'].round(2)
-
-    result["used_mem_caching"] = mem_read_distribution['data_stored_mem']
-    result["used_sto_caching"] = mem_read_distribution['data_stored_sto']
-    result["used_mem_spooling"] = mem_read_distribution['data_stored_mem']
-    result["used_sto_spooling"] = mem_read_distribution['data_stored_sto']
 
     result["rw_mem"] = result["read_cache_mem"] + 2 * result["read_spool_mem"].round(2)
     result["rw_sto"] = result["read_cache_sto"] + 2 * result["read_spool_sto"].round(2)

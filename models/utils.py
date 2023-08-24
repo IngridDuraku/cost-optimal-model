@@ -46,22 +46,13 @@ def distr_pack_helper(bins, distr, index):
     for size_window in size_windows:
         res.extend(calc_groups(size_window, distr_len))
 
-    intermediate = pd.DataFrame(data={
+    result = pd.DataFrame(data={
         'distr_val': distr,
-        'group': res,
-        'data_read': 1
+        'group': res
     }).groupby('group').sum().transpose()
 
-    intermediate = sanitize_packing(intermediate)
-
-    result = pd.DataFrame(data={
-        'data_mem': intermediate.iloc[0]["data_mem"],
-        'data_sto': intermediate.iloc[0]["data_sto"],
-        'data_s3': intermediate.iloc[0]["data_s3"],
-        'data_stored_mem': intermediate.iloc[1]["data_mem"],
-        'data_stored_sto': intermediate.iloc[1]["data_sto"],
-        'data_stored_s3': intermediate.iloc[1]["data_s3"],
-    }, index=[index])
+    result['index'] = index
+    result.set_index('index', inplace=True)
 
     return result
 
@@ -84,7 +75,7 @@ def model_distr_pack(bins, distr):
 
         res = pd.concat([res, next_]).fillna(0)
 
-    return res
+    return sanitize_packing(res)
 
 
 def model_make_scaling(p, n):

@@ -26,6 +26,8 @@ QUERIES = [
         "scaling_param": 0.98,
         "per_server_cores": 8,
         "arrival_time": 0,
+        "mem_request": 92,
+        "sto_request": 0,
     },
     {
         "cpu_h": 100,
@@ -36,7 +38,9 @@ QUERIES = [
         "spooling_skew": 0.1,
         "scaling_param": 0.95,
         "per_server_cores": 1,
-        "arrival_time": 50_000,
+        "arrival_time": 0,
+        "mem_request": 92,
+        "sto_request": 0,
     },
     {
         "cpu_h": 1000,
@@ -47,7 +51,9 @@ QUERIES = [
         "spooling_skew": 0.1,
         "scaling_param": 0.98,
         "per_server_cores": 36,
-        "arrival_time": 100_000,
+        "arrival_time": 0,
+        "mem_request": 48,
+        "sto_request": 400
     },
     {
         "cpu_h": 700,
@@ -58,7 +64,9 @@ QUERIES = [
         "spooling_skew": 0.3,
         "scaling_param": 0.9,
         "per_server_cores": 4,
-        "arrival_time": 300_000,
+        "arrival_time": 0,
+        "mem_request": 92,
+        "sto_request": 200,
     },
     {
         "cpu_h": 50,
@@ -69,7 +77,9 @@ QUERIES = [
         "spooling_skew": 0.2,
         "scaling_param": 0.8,
         "per_server_cores": 8,
-        "arrival_time": 350_000,
+        "arrival_time": 0,
+        "mem_request": 48,
+        "sto_request": 300,
     },
     {
         "cpu_h": 50,
@@ -80,6 +90,8 @@ QUERIES = [
         "spooling_skew": 0.2,
         "scaling_param": 0.8,
         "per_server_cores": 8,
-        "arrival_time": 350_000,
+        "arrival_time": 0,
+        "mem_request": 24,
+        "sto_request": 0,
     }
 ]
