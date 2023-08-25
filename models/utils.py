@@ -29,7 +29,6 @@ def model_distr_split_fn(distr, split_first_read):
 
 
 def calc_groups(sizes, distr_len):
-    print("Sizes", sizes)
     if len(sizes) == 1:
         return [sizes.index[0]] * min(sizes[0], distr_len)
     elif sizes[0] > distr_len:

@@ -4,3 +4,4 @@ pandasql==0.7.3
 scipy==1.10.1
 
 SQLAlchemy~=2.0.19
+python-dotenv~=1.0.0
