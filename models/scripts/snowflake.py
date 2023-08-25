@@ -6,8 +6,11 @@ from preprocessing.instances import instSet_transform
 from ..snowdb_conn import engine
 from ..utils import distr_maker, model_distr_pack
 
+SNOWFLAKE_INSTANCE = instSet_transform()
+SNOWFLAKE_INSTANCE = SNOWFLAKE_INSTANCE[SNOWFLAKE_INSTANCE["id"] == "c5d.24xlarge"]
 
-def snowset_warehouse_random(fraction = 0.1):
+
+def snowset_warehouse_random(fraction=0.1):
     sql_statement = text(f"SELECT warehouseId FROM snowset TABLESAMPLE SYSTEM ({fraction})")
     result_df = None
     with engine.connect() as conn:
@@ -17,23 +20,23 @@ def snowset_warehouse_random(fraction = 0.1):
 
 
 def snowset_sample_warehouse(fraction=0.1):
-    sql_statement = text("""
-       SELECT s.warehouse_id,
+    sql_statement = text(f"""
+       SELECT warehouseId as warehouse_id,
        sum(systemCpuTime) + sum(userCpuTime) AS cpu_micros,
        sum(persistentReadBytesS3)            AS scan_s3,
        sum(persistentReadBytesCache)         AS scan_cache,
        sum(intDataReadBytesLocalSSD)         AS spool_ssd,
        sum(intDataReadBytesS3)               AS spool_s3,
        avg(warehousesize)                    AS warehouse_size
-      FROM snowset s
-      JOIN (SELECT warehouseId FROM snowset TABLESAMPLE SYSTEM ({fraction})) w ON w.warehouseId = s.warehouseId
-      WHERE s.warehouseSize = 1
-      GROUP BY s.warehouseId
+      FROM TABLESAMPLE SYSTEM ({fraction}))
+      -- WHERE s.warehouseSize = 1
+      GROUP BY warehouseId
     """)
 
     result_df = None
     with engine.connect() as conn:
         result_df = pd.DataFrame(conn.execute(sql_statement).fetchall(), columns=[
+            'warehouse_id'
             'cpu_micros',
             'scan_s3',
             'scan_cache',
@@ -46,32 +49,29 @@ def snowset_sample_warehouse(fraction=0.1):
 
 
 def snowset_estimate_cache_skew(row):
-    snowflake_instance = instSet_transform()[id == "c5d.2xlarge"]
-    scanned = row['scan_s3'] + row['scan_cache'] / row['warehouse_size'] / 1024**3
-    tail = row['scan_s3'] / row['warehouse_size'] / 1024**3
+    scanned = float(row['scan_s3'] + row['scan_cache'] / row['warehouse_size'] / 1024**3)
+    tail = float(row['scan_s3'] / row['warehouse_size'] / 1024**3)
 
     bins = {
-        'data_mem': pd.DataFrame(data={'size': snowflake_instance['calc_mem_caching'].round(decimals=0), 'prio': snowflake_instance['calc_mem_speed']}),
-        'data_sto': pd.DataFrame(data={'size': snowflake_instance['calc_sto_caching'].round(decimals=0), 'prio': snowflake_instance['calc_sto_speed']}),
-        'data_s3': pd.DataFrame(data={'size': scanned, 'prio': snowflake_instance['calc_net_speed']})
+        'data_mem': pd.DataFrame(data={'size': SNOWFLAKE_INSTANCE['calc_mem_caching'].round(decimals=0), 'prio': SNOWFLAKE_INSTANCE['calc_mem_speed']}),
+        'data_sto': pd.DataFrame(data={'size': SNOWFLAKE_INSTANCE['calc_sto_caching'].round(decimals=0), 'prio': SNOWFLAKE_INSTANCE['calc_sto_speed']}),
+        'data_s3': pd.DataFrame(data={'size': scanned, 'prio': SNOWFLAKE_INSTANCE['calc_net_speed']})
     }
 
     skew = 0.00001
     error = 1
-    i = 0
+    i = 1
 
     while error > 0.01 and i < 100 and skew > 0:
         distribution = distr_maker(skew, round(scanned))
         pack = model_distr_pack(bins, distribution)
-        if not pack["data_s3"]:
+        if pack.iloc[0]["data_s3"] == 0:
             break
 
-        err_abs = pack['data_s3'] - tail
-        error = abs(err_abs/tail)
-        skew = skew + np.sign(err_abs) * np.min(0.1, error / (i * 0.5))
+        err_abs = round(pack.iloc[0]['data_s3'] - float(tail))
+        error = round(abs(err_abs/tail))
+        skew = skew + np.sign(err_abs) * min(0.1, error / (i * 0.5))
         i += i
-
-    # todo: check accuracy
 
     row['data_scan'] = scanned
     row['cache_skew_tail'] = tail
@@ -88,10 +88,9 @@ def snowset_spool_frac_estimation(row):
     row['spool_frac'] = spooled / scanned
 
 
-def snowset_row_est_spool_skew(row, df):
-    snowflake_instance = instSet_transform()[id == "c5d.2xlarge"]
-    scanned = row['spool_frac'] * row['data_scan']
-    tail = row['spool_s3'] / row['warehouse_size'] / 1024 ** 3
+def snowset_row_est_spool_skew(row):
+    scanned = float(row['spool_frac']) * float(row['data_scan'])
+    tail = float(row['spool_s3'] / row['warehouse_size'] / 1024 ** 3)
 
     if scanned < 1:
         row['spool_skew_tail'] = tail
@@ -102,24 +101,26 @@ def snowset_row_est_spool_skew(row, df):
         return row
 
     bins = {
-        'data_mem': pd.DataFrame(data={'size': snowflake_instance['calc_mem_caching'].round(decimals=0), 'prio': snowflake_instance['calc_mem_speed']}),
-        'data_sto': pd.DataFrame(data={'size': snowflake_instance['calc_sto_caching'].round(decimals=0), 'prio': snowflake_instance['calc_sto_speed']}),
-        'data_s3': pd.DataFrame(data={'size': scanned, 'prio': snowflake_instance['calc_net_speed']})
+        'data_mem': pd.DataFrame(data={'size': SNOWFLAKE_INSTANCE['calc_mem_caching'].round(decimals=0), 'prio': SNOWFLAKE_INSTANCE['calc_mem_speed']}),
+        'data_sto': pd.DataFrame(data={'size': SNOWFLAKE_INSTANCE['calc_sto_caching'].round(decimals=0), 'prio': SNOWFLAKE_INSTANCE['calc_sto_speed']}),
+        'data_s3': pd.DataFrame(data={'size': scanned, 'prio': SNOWFLAKE_INSTANCE['calc_net_speed']})
     }
 
     skew = 0.00001
     error = 1
-    iter_count = 0
+    iter_count = 1
 
     while error > 0.01 and iter_count < 100 and skew > 0:
         dist_est = distr_maker(skew, round(scanned))
         pack = model_distr_pack(bins, dist_est)
 
-        if not pack['data_s3']:
+        if not pack.iloc[0]['data_s3'] or tail == 0:
             break
 
-        err_abs = pack['data_s3'] - tail
-        error = np.abs(err_abs / tail)
+        print("Data S3: ", pack.iloc[0]['data_s3'])
+        print("Tail: ", tail)
+        err_abs = pack.iloc[0]['data_s3'] - tail
+        error = abs(err_abs / tail)
         skew = skew + np.sign(err_abs) * min(0.1, error / (iter_count * 0.5))
         iter_count += 1
 

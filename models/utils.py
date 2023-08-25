@@ -29,6 +29,7 @@ def model_distr_split_fn(distr, split_first_read):
 
 
 def calc_groups(sizes, distr_len):
+    print("Sizes", sizes)
     if len(sizes) == 1:
         return [sizes.index[0]] * min(sizes[0], distr_len)
     elif sizes[0] > distr_len:
@@ -40,7 +41,7 @@ def calc_groups(sizes, distr_len):
 def distr_pack_helper(bins, distr):
     distr_len = len(distr)
     bins = bins.sort_values(by='prio', ascending=False)
-    bins['acc_size'] = bins['size'].cumsum().astype('int32')
+    bins['acc_size'] = bins['size'].astype('int32').cumsum()
     size_windows = bins['acc_size'].rolling(window=2)
     res = []
     for size_window in size_windows:
@@ -61,8 +62,8 @@ def model_distr_pack(bins, distr):
         next_ = distr_pack_helper(
             bins=pd.DataFrame(
                 data={
-                    'prio': [bins['data_mem']['prio'][i], bins['data_sto']['prio'][i], bins['data_s3']['prio'][i]],
-                    'size': [bins['data_mem']['size'][i], bins['data_sto']['size'][i], bins['data_s3']['size'][i]],
+                    'prio': [bins['data_mem']['prio'].iloc[i], bins['data_sto']['prio'].iloc[i], bins['data_s3']['prio'].iloc[i]],
+                    'size': [bins['data_mem']['size'].iloc[i], bins['data_sto']['size'].iloc[i], bins['data_s3']['size'].iloc[i]],
                 },
                 index=['data_mem', 'data_sto', 'data_s3']
             ),
@@ -78,13 +79,16 @@ def model_make_scaling(p, n):
 
 
 def sanitize_packing(packed_df):
-    cols = {"data_mem", "data_sto", "data_s3"}
+    cols = ["data_mem", "data_sto", "data_s3"]
+    result = pd.DataFrame(columns=cols)
     for col in cols:
         if col not in packed_df.columns:
-            packed_df[col] = 0
-    packed_df.round(decimals=2)
+            result[col] = 0
+        else:
+            result[col] = packed_df[col]
+    result.round(decimals=2)
 
-    return packed_df
+    return result
 
 
 def calc_cost(time_df):
