@@ -28,17 +28,19 @@ def snowset_sample_warehouse(fraction=0.01):
         'scan_cache': 'int64',
         'spool_ssd': 'int64',
         'spool_s3': 'int64',
-        'warehouse_size': 'int64'
+        'warehouse_size': 'int64',
+        'total_duration': 'int64',
     }
 
     sql_statement = text(f"""
-       SELECT warehouseId,
+       SELECT warehouseId as warehouse_id,
        sum(systemCpuTime) + sum(userCpuTime) AS cpu_micros,
        sum(persistentReadBytesS3)            AS scan_s3,
        sum(persistentReadBytesCache)         AS scan_cache,
        sum(intDataReadBytesLocalSSD)         AS spool_ssd,
        sum(intDataReadBytesS3)               AS spool_s3,
-       avg(warehouseSize)                    AS warehouse_size
+       avg(warehouseSize)                    AS warehouse_size,
+       sum(durationtotal)                    AS total_duration
       FROM snowset TABLESAMPLE SYSTEM ({fraction})
       WHERE warehouseSize = 1
       group by warehouseId
@@ -53,7 +55,8 @@ def snowset_sample_warehouse(fraction=0.01):
             'scan_cache',
             'spool_ssd',
             'spool_s3',
-            'warehouse_size'
+            'warehouse_size',
+            'total_duration'
         ]).astype(df_types)
 
     return result_df
@@ -156,6 +159,8 @@ def snowset_row_est_spool_skew(row):
 
 def generate_params_from_snowflake(snowflake_data):
     return pd.DataFrame({
+        'warehouse_id': snowflake_data['warehouse_id'],
+        'total_duration': snowflake_data['total_duration']/1000,
         'cpu_h': snowflake_data['cpu_micros'] / 10**6 / 60**2,
         'total_reads': (snowflake_data['scan_s3'] + snowflake_data['scan_cache']) / 1024**3,
         'cache_skew': snowflake_data['cache_skew'],
@@ -182,7 +187,7 @@ def calculate_times():
     snowset_subset = snowset_subset.apply(snowset_row_est_spool_skew, axis=1)
     queries = generate_params_from_snowflake(snowset_subset)
     for i in range(0, len(queries)):
-        print("Query ", i, ": ", queries.iloc[i])
+        print("Query ", queries.iloc[i]['warehouse_id'], ": ", queries.iloc[i])
         result = calc_time_m4(SNOWFLAKE_INSTANCE, queries.iloc[i])
         print(result)
         # result.to_csv("./output/snowflake/query_" + str(queries.iloc[i]['query_id']) + ".csv")
