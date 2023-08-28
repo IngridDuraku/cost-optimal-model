@@ -3,9 +3,9 @@ import pandas as pd
 from sqlalchemy import text
 
 from preprocessing.instances import instSet_transform
-from .m4 import calc_time_m4
-from ..snowdb_conn import engine
-from ..utils import distr_maker, model_distr_pack
+from models.scripts.m4 import calc_time_m4
+from models.snowdb_conn import engine
+from models.utils import distr_maker, model_distr_pack
 
 SNOWFLAKE_INSTANCE = instSet_transform()
 SNOWFLAKE_INSTANCE = SNOWFLAKE_INSTANCE[SNOWFLAKE_INSTANCE["id"] == "c5d.24xlarge"]
@@ -155,27 +155,38 @@ def snowset_row_est_spool_skew(row):
 
 
 def generate_params_from_snowflake(snowflake_data):
-    return {
-        'query_id': snowflake_data['query_id'],
+    return pd.DataFrame({
         'cpu_h': snowflake_data['cpu_micros'] / 10**6 / 60**2,
-        'total_reads': snowflake_data['scan_s3'] + snowflake_data['scan_cache'],
+        'total_reads': (snowflake_data['scan_s3'] + snowflake_data['scan_cache']) / 1024**3,
         'cache_skew': snowflake_data['cache_skew'],
         'first_read_from_s3': False,
         'spooling_fraction': snowflake_data['spool_frac'],
         'spooling_skew': snowflake_data['spool_skew'],
-        'spooling_read_sum':  snowflake_data['spool_frac'] * (snowflake_data['scan_s3'] + snowflake_data['scan_cache']),
+        'spooling_read_sum':  snowflake_data['spool_frac'] * ((snowflake_data['scan_s3'] + snowflake_data['scan_cache'])/ 1024**3),
         'scaling_param': 0.95,
-        'max_instance_count': 128
-    }
+        'max_instance_count': 1
+    })
 
 
 def calculate_times():
     # query - snowflake_data (params) row
     snowset_subset = snowset_sample_warehouse(0.01)
+    snowset_subset = snowset_subset[
+        snowset_subset["scan_s3"] != 0 &
+        (snowset_subset["scan_cache"] > (SNOWFLAKE_INSTANCE.iloc[0]["calc_sto_caching"] + SNOWFLAKE_INSTANCE.iloc[0][
+            "calc_mem_caching"]) * 1024 ** 3) &
+        (snowset_subset['scan_s3'] + snowset_subset['scan_cache'] > snowset_subset['warehouse_size'] * (300 * 1024 ** 3))
+        ]
     snowset_subset = snowset_subset.apply(snowset_estimate_cache_skew, axis=1)
     snowset_subset = snowset_subset.apply(snowset_spool_frac_estimation, axis=1)
-    snowset_subset = snowset_subset.apply(snowset_spool_frac_estimation, axis=1)
+    snowset_subset = snowset_subset.apply(snowset_row_est_spool_skew, axis=1)
     queries = generate_params_from_snowflake(snowset_subset)
-    for query in queries:
-        result = calc_time_m4(SNOWFLAKE_INSTANCE, query)
-        result.to_csv("./output/snowflake/query_" + str(query['query_id']) + ".csv")
+    for i in range(0, len(queries)):
+        print("Query ", i, ": ", queries.iloc[i])
+        result = calc_time_m4(SNOWFLAKE_INSTANCE, queries.iloc[i])
+        print(result)
+        # result.to_csv("./output/snowflake/query_" + str(queries.iloc[i]['query_id']) + ".csv")
+
+
+if __name__ == "__main__":
+    calculate_times()

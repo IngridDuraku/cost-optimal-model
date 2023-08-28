@@ -14,7 +14,6 @@ def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale, cpu
         'data_s3': pd.DataFrame(
             data={'size': [len(distr_cache['working'])] * len(inst), 'prio': inst['calc_net_speed']})
     }
-
     bins_spooling = {
         'data_mem': pd.DataFrame(
             data={'size': inst['calc_mem_spooling'].round(decimals=0), 'prio': inst['calc_mem_speed']}),
@@ -108,7 +107,7 @@ def calc_time_m4(instances, params=DEFAULT_PARAMS):
     distr_cache = list(map(lambda x: model_distr_split_fn(x, params['first_read_from_s3']), distr_caching_precomputed))
 
     spooling_distr = [
-        0 if round(params['spooling_read_sum']/n) < 1
+        [] if round(params['spooling_read_sum']/n) < 1
         else distr_maker(shape=params['spooling_skew'], size=round(params['spooling_read_sum'] / n))
         for n in range(1, params['max_instance_count'] + 1)
     ]
