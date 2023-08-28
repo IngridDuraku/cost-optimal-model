@@ -174,7 +174,7 @@ def calculate_times():
     snowset_subset = snowset_sample_warehouse(0.01)
     snowset_subset = snowset_subset.apply(snowset_estimate_cache_skew, axis=1)
     snowset_subset = snowset_subset.apply(snowset_spool_frac_estimation, axis=1)
-    snowset_subset = snowset_subset.apply(snowset_spool_frac_estimation, axis=1)
+    snowset_subset = snowset_subset.apply(snowset_row_est_spool_skew, axis=1)
     queries = generate_params_from_snowflake(snowset_subset)
     for query in queries:
         result = calc_time_m4(SNOWFLAKE_INSTANCE, query)
