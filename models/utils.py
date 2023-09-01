@@ -37,7 +37,24 @@ def calc_groups(sizes, distr_len):
         return [sizes.index[1]] * (min(sizes[1], distr_len) - sizes[0])
 
 
-def distr_pack_helper(bins, distr):
+# def distr_pack_helper(bins, distr):
+#     distr_len = len(distr)
+#     bins = bins.sort_values(by='prio', ascending=False)
+#     bins['acc_size'] = bins['size'].astype('int32').cumsum()
+#     size_windows = bins['acc_size'].rolling(window=2)
+#     res = []
+#     for size_window in size_windows:
+#         res.extend(calc_groups(size_window, distr_len))
+#
+#     result = pd.DataFrame(data={
+#         'distr_val': distr,
+#         'group': res
+#     }).groupby('group').sum().transpose()
+#
+#     return result.reset_index()
+
+
+def distr_pack_helper(bins, distr, index):
     distr_len = len(distr)
     bins = bins.sort_values(by='prio', ascending=False)
     bins['acc_size'] = bins['size'].astype('int32').cumsum()
@@ -46,12 +63,24 @@ def distr_pack_helper(bins, distr):
     for size_window in size_windows:
         res.extend(calc_groups(size_window, distr_len))
 
-    result = pd.DataFrame(data={
+    intermediate = pd.DataFrame(data={
         'distr_val': distr,
-        'group': res
+        'group': res,
+        'data_read': 1
     }).groupby('group').sum().transpose()
 
-    return result.reset_index()
+    intermediate = sanitize_packing(intermediate)
+
+    result = pd.DataFrame(data={
+        'data_mem': intermediate.iloc[0]["data_mem"],
+        'data_sto': intermediate.iloc[0]["data_sto"],
+        'data_s3': intermediate.iloc[0]["data_s3"],
+        'data_stored_mem': intermediate.iloc[1]["data_mem"],
+        'data_stored_sto': intermediate.iloc[1]["data_sto"],
+        'data_stored_s3': intermediate.iloc[1]["data_s3"],
+    }, index=[index])
+
+    return result
 
 
 def model_distr_pack(bins, distr):
@@ -66,11 +95,12 @@ def model_distr_pack(bins, distr):
                 },
                 index=['data_mem', 'data_sto', 'data_s3']
             ),
-            distr=distr
+            distr=distr,
+            index=bins['data_mem'].index[i]
         )
         res = pd.concat([res, next_], ignore_index=True).fillna(0)
 
-    return sanitize_packing(res)
+    return res
 
 
 def model_make_scaling(p, n):

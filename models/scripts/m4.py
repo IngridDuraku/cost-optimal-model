@@ -5,7 +5,7 @@ from models.const import (CPU_H, DEFAULT_PARAMS)
 from models.utils import model_distr_pack, distr_maker, model_distr_split_fn, model_make_scaling
 
 
-def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale, cpu_h=CPU_H):
+def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale, params):
     inst = inst.reset_index()
     bins_cache = {
         'data_mem': pd.DataFrame(
@@ -46,6 +46,10 @@ def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale, cpu
             "rw_sto",
             "rw_s3",
             "rw_xchg",
+            "used_mem_caching",
+            "used_sto_caching",
+            "used_mem_spooling",
+            "used_sto_spooling",
             "stat_read_spool",
             "stat_read_work",
             "time_cpu",
@@ -77,12 +81,21 @@ def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale, cpu
     result["rw_sto"] = result["read_cache_sto"] + 2 * result["read_spool_sto"].round(2)
     result["rw_s3"] = result["read_cache_s3"] + 2 * result["read_spool_s3"].round(2)
 
-    result["rw_xchg"] = 0 if count == 0 else 2 * spool_sum
+    result["used_mem_caching"] = mem_read_distribution['data_stored_mem']
+    result["used_sto_caching"] = mem_read_distribution['data_stored_sto']
+    result["used_mem_spooling"] = mem_read_distribution['data_stored_mem']
+    result["used_sto_spooling"] = mem_read_distribution['data_stored_sto']
+
+    result["rw_xchg"] = 0 if count == 1 else 2 * spool_sum
 
     result["stat_read_spool"] = spool_sum
     result["stat_read_work"] = round(sum(distr_cache["working"]))
+    result["used_cores"] = inst.apply(
+        func=lambda row: min(row["calc_cpu_real"], params["max_cores"]),
+        axis=1
+    )
 
-    result["time_cpu"] = ((cpu_h * 3600 / inst['calc_cpu_real']) * scale).round(2)
+    result["time_cpu"] = ((params["cpu_h"] * 3600 / result["used_cores"]) * scale).round(2)
     result["time_mem"] = ((result["rw_mem"] / inst["calc_mem_speed"]) * inv_eff).round(2)
     result["time_sto"] = ((result["rw_sto"] / inst["calc_sto_speed"]) * inv_eff).round(2)
     result["time_s3"] = ((result["rw_s3"] / inst["calc_s3_speed"]) * inv_eff).round(2)
@@ -115,7 +128,7 @@ def calc_time_m4(instances, params=DEFAULT_PARAMS):
 
     scaling = [model_make_scaling(params['scaling_param'], n) for n in range(1, params['max_instance_count']+1)]
     result = [
-        calc_time_for_config_m4(instances, i, distr_cache[i-1], spooling_distr[i-1], scaling[i-1], params['cpu_h'])
+        calc_time_for_config_m4(instances, i, distr_cache[i-1], spooling_distr[i-1], scaling[i-1], params)
         for i in range(1, params['max_instance_count']+1)
     ]
 
