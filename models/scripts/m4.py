@@ -102,8 +102,7 @@ def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale, par
 
     result["time_xchg"] = ((result["rw_xchg"] / 2 / inst["calc_net_speed"]) * inv_eff).round(2)
     result["time_load"] = ((result["read_cache_load"] / inst["calc_s3_speed"]) * inv_eff).round(2)
-    result["stat_time_sum"] = np.nansum(np.array([result["time_s3"], result["time_mem"], result["time_xchg"],
-                                                 result["time_load"], result["time_cpu"]]))
+    result["stat_time_sum"] = result["time_s3"] + result["time_mem"] + result["time_xchg"] + result["time_load"]+ result["time_cpu"]
     result["stat_time_max"] = result[["time_s3", "time_sto", "time_mem", "time_xchg", "time_load", "time_cpu"]].max(
         axis=1
     )
