@@ -66,7 +66,7 @@ def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale, par
     result["id_name"] = inst["id"]
     result["count"] = count
     result["id"] = result["id_name"] + "/" + str(count)
-    result["cost_usdph"] = (inst["cost_usdph"] * count).round(3)
+    result["cost_usdph"] = (inst["cost_usdph"] * count).round(7)
 
     result["read_cache_load"] = sum(distr_cache["initial"]).round(2)
     result["read_cache_mem"] = mem_read_distribution['data_mem'].round(2)
@@ -95,14 +95,14 @@ def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale, par
         axis=1
     )
 
-    result["time_cpu"] = ((params["cpu_h"] * 3600 / result["used_cores"]) * scale).round(2)
-    result["time_mem"] = ((result["rw_mem"] / inst["calc_mem_speed"]) * inv_eff).round(2)
-    result["time_sto"] = ((result["rw_sto"] / inst["calc_sto_speed"]) * inv_eff).round(2)
-    result["time_s3"] = ((result["rw_s3"] / inst["calc_s3_speed"]) * inv_eff).round(2)
+    result["time_cpu"] = ((params["cpu_h"] * 3600 / result["used_cores"]) * scale).round(7)
+    result["time_mem"] = ((result["rw_mem"] / inst["calc_mem_speed"]) * inv_eff).round(7)
+    result["time_sto"] = ((result["rw_sto"] / inst["calc_sto_speed"]) * inv_eff).round(7)
+    result["time_s3"] = ((result["rw_s3"] / inst["calc_s3_speed"]) * inv_eff).round(7)
 
-    result["time_xchg"] = ((result["rw_xchg"] / 2 / inst["calc_net_speed"]) * inv_eff).round(2)
-    result["time_load"] = ((result["read_cache_load"] / inst["calc_s3_speed"]) * inv_eff).round(2)
-    result["stat_time_sum"] = result["time_s3"] + result["time_mem"] + result["time_xchg"] + result["time_load"]+ result["time_cpu"]
+    result["time_xchg"] = ((result["rw_xchg"] / 2 / inst["calc_net_speed"]) * inv_eff).round(7)
+    result["time_load"] = ((result["read_cache_load"] / inst["calc_s3_speed"]) * inv_eff).round(7)
+    result["stat_time_sum"] = result["time_s3"] + result["time_sto"] + result["time_mem"] + result["time_xchg"] + result["time_load"]+ result["time_cpu"]
     result["stat_time_max"] = result[["time_s3", "time_sto", "time_mem", "time_xchg", "time_load", "time_cpu"]].max(
         axis=1
     )

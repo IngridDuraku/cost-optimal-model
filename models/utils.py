@@ -72,12 +72,12 @@ def distr_pack_helper(bins, distr, index):
     intermediate = sanitize_packing(intermediate)
 
     result = pd.DataFrame(data={
-        'data_mem': intermediate.iloc[0]["data_mem"],
-        'data_sto': intermediate.iloc[0]["data_sto"],
-        'data_s3': intermediate.iloc[0]["data_s3"],
-        'data_stored_mem': intermediate.iloc[1]["data_mem"],
-        'data_stored_sto': intermediate.iloc[1]["data_sto"],
-        'data_stored_s3': intermediate.iloc[1]["data_s3"],
+        'data_mem': 0 if len(intermediate) == 0 else intermediate.iloc[0]["data_mem"],
+        'data_sto': 0 if len(intermediate) == 0 else intermediate.iloc[0]["data_sto"],
+        'data_s3': 0 if len(intermediate) == 0 else intermediate.iloc[0]["data_s3"],
+        'data_stored_mem': 0 if len(intermediate) == 0 else intermediate.iloc[1]["data_mem"],
+        'data_stored_sto': 0 if len(intermediate) == 0 else intermediate.iloc[1]["data_sto"],
+        'data_stored_s3': 0 if len(intermediate) == 0 else intermediate.iloc[1]["data_s3"],
     }, index=[index])
 
     return result
