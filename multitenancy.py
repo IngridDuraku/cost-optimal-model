@@ -3,7 +3,7 @@ from itertools import combinations
 from models.const import Q1, Q2
 from models.scripts.m4 import calc_time_m4
 from models.utils import calc_cost
-from preprocessing.instances import instSet_transform
+from preprocessing.instances import inst_set_transform
 
 INSTANCE_COUNT = 1
 QUERIES_PER_INSTANCE = 2
@@ -62,7 +62,7 @@ def combine_queries(*queries):
 
 
 if __name__ == "__main__":
-    instances = instSet_transform()
+    instances = inst_set_transform()
     query = combine_queries(Q1, Q2)
 
     print(query)

@@ -8,7 +8,7 @@ def write_chunk(part, lines):
 
 
 if __name__ == "__main__":
-    with open("../../data/snowset-main.csv", "r") as f:
+    with open("../../../data/snowset-main.csv", "r") as f:
         count = 0
         header = f.readline()
         lines = []

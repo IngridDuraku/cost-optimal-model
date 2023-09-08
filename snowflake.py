@@ -2,13 +2,13 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import text
 
-from preprocessing.instances import instSet_transform
+from preprocessing.instances import inst_set_transform
 from models.scripts.m4 import calc_time_m4
 from models.snowdb_conn import engine
 from models.utils import distr_maker, model_distr_pack
 
-SNOWFLAKE_INSTANCE = instSet_transform()
-SNOWFLAKE_INSTANCE = SNOWFLAKE_INSTANCE[SNOWFLAKE_INSTANCE["id"] == "c5d.24xlarge"]
+SNOWFLAKE_INSTANCE = inst_set_transform()
+SNOWFLAKE_INSTANCE = SNOWFLAKE_INSTANCE[SNOWFLAKE_INSTANCE["id"] == "c5d.2xlarge"]
 
 
 def snowset_warehouse_random(fraction=0.1):
@@ -30,6 +30,7 @@ def snowset_sample_warehouse(fraction=0.01):
         'spool_s3': 'int64',
         'warehouse_size': 'int64',
         'total_duration': 'int64',
+        'max_cores': 'int64',
     }
 
     sql_statement = text(f"""
@@ -40,7 +41,8 @@ def snowset_sample_warehouse(fraction=0.01):
        sum(intDataReadBytesLocalSSD)         AS spool_ssd,
        sum(intDataReadBytesS3)               AS spool_s3,
        avg(warehouseSize)                    AS warehouse_size,
-       sum(durationtotal)                    AS total_duration
+       sum(durationtotal)                    AS total_duration,
+       sum(perServerCores)                    AS max_cores
       FROM snowset TABLESAMPLE SYSTEM ({fraction})
       WHERE warehouseSize = 1
       group by warehouseId
@@ -56,7 +58,8 @@ def snowset_sample_warehouse(fraction=0.01):
             'spool_ssd',
             'spool_s3',
             'warehouse_size',
-            'total_duration'
+            'total_duration',
+            'max_cores'
         ]).astype(df_types)
 
     return result_df
@@ -169,6 +172,7 @@ def generate_params_from_snowflake(snowflake_data):
         'spooling_skew': snowflake_data['spool_skew'],
         'spooling_read_sum':  snowflake_data['spool_frac'] * ((snowflake_data['scan_s3'] + snowflake_data['scan_cache'])/ 1024**3),
         'scaling_param': 0.95,
+        'max_cores': snowflake_data['max_cores'],
         'max_instance_count': 1
     })
 
@@ -194,4 +198,17 @@ def calculate_times():
 
 
 if __name__ == "__main__":
-    calculate_times()
+    snowset_subset = snowset_sample_warehouse(0.01)
+    snowset_subset = snowset_subset[
+        snowset_subset["scan_s3"] != 0 &
+        (snowset_subset["scan_cache"] > (SNOWFLAKE_INSTANCE.iloc[0]["calc_sto_caching"] + SNOWFLAKE_INSTANCE.iloc[0][
+            "calc_mem_caching"]) * 1024 ** 3) &
+        (snowset_subset['scan_s3'] + snowset_subset['scan_cache'] > snowset_subset['warehouse_size'] * (
+                    300 * 1024 ** 3))
+        ]
+    snowset_subset = snowset_subset.apply(snowset_estimate_cache_skew, axis=1)
+    snowset_subset = snowset_subset.apply(snowset_spool_frac_estimation, axis=1)
+    snowset_subset = snowset_subset.apply(snowset_row_est_spool_skew, axis=1)
+    queries = generate_params_from_snowflake(snowset_subset)
+
+    queries.to_csv("./input/snowflake_queries.csv")
