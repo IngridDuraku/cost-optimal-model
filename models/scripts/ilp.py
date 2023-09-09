@@ -7,6 +7,24 @@ import pandas as pd
 import json
 
 
+def prepare_tests():
+    snowflake_queries = pd.read_csv("./input/snowflake_queries.csv")
+    queries = snowflake_queries.sample(n=10)
+    queries_dict = queries.to_dict("records")
+    tests = [
+        {
+            "test_id": "Test Snowflake",
+            "queries": queries_dict,
+            "max_instances": 8,
+            "max_queries_per_instance": 10,
+            "output_file": "test_snowflake.json"
+        }
+    ]
+
+    return tests
+
+
+
 def calc_query_requests(queries, inst):
     query_requirements = []
     for q in queries:

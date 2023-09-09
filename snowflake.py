@@ -23,6 +23,7 @@ def snowset_warehouse_random(fraction=0.1):
 def snowset_sample_warehouse(fraction=0.01):
     df_types = {
         'warehouse_id': 'int64',
+        'query_id': 'int64',
         'cpu_micros': 'int64',
         'scan_s3': 'int64',
         'scan_cache': 'int64',
@@ -35,23 +36,24 @@ def snowset_sample_warehouse(fraction=0.01):
 
     sql_statement = text(f"""
        SELECT warehouseId as warehouse_id,
-       sum(systemCpuTime) + sum(userCpuTime) AS cpu_micros,
-       sum(persistentReadBytesS3)            AS scan_s3,
-       sum(persistentReadBytesCache)         AS scan_cache,
-       sum(intDataReadBytesLocalSSD)         AS spool_ssd,
-       sum(intDataReadBytesS3)               AS spool_s3,
-       avg(warehouseSize)                    AS warehouse_size,
-       sum(durationtotal)                    AS total_duration,
-       sum(perServerCores)                    AS max_cores
+       queryId as query_id,
+       systemCpuTime + userCpuTime AS cpu_micros,
+       persistentReadBytesS3           AS scan_s3,
+       persistentReadBytesCache         AS scan_cache,
+       intDataReadBytesLocalSSD         AS spool_ssd,
+       intDataReadBytesS3              AS spool_s3,
+       warehouseSize                    AS warehouse_size,
+       durationtotal                    AS total_duration,
+       perServerCores                    AS max_cores
       FROM snowset TABLESAMPLE SYSTEM ({fraction})
       WHERE warehouseSize = 1
-      group by warehouseId
     """)
 
     result_df = None
     with engine.connect() as conn:
         result_df = pd.DataFrame(conn.execute(sql_statement).fetchall(), columns=[
             'warehouse_id',
+            'query_id',
             'cpu_micros',
             'scan_s3',
             'scan_cache',
@@ -163,6 +165,7 @@ def snowset_row_est_spool_skew(row):
 def generate_params_from_snowflake(snowflake_data):
     return pd.DataFrame({
         'warehouse_id': snowflake_data['warehouse_id'],
+        'query_id': snowflake_data['query_id'],
         'total_duration': snowflake_data['total_duration']/1000,
         'cpu_h': snowflake_data['cpu_micros'] / 10**6 / 60**2,
         'total_reads': (snowflake_data['scan_s3'] + snowflake_data['scan_cache']) / 1024**3,
@@ -212,3 +215,4 @@ if __name__ == "__main__":
     queries = generate_params_from_snowflake(snowset_subset)
 
     queries.to_csv("./input/snowflake_queries.csv")
+
