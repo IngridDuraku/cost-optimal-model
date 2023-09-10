@@ -37,22 +37,48 @@ def calc_groups(sizes, distr_len):
         return [sizes.index[1]] * (min(sizes[1], distr_len) - sizes[0])
 
 
+# def distr_pack_helper(bins, distr):
+#     distr_len = len(distr)
+#     bins = bins.sort_values(by='prio', ascending=False)
+#     bins['acc_size'] = bins['size'].astype('int32').cumsum()
+#     size_windows = bins['acc_size'].rolling(window=2)
+#     res = []
+#     for size_window in size_windows:
+#         res.extend(calc_groups(size_window, distr_len))
+#
+#     result = pd.DataFrame(data={
+#         'distr_val': distr,
+#         'group': res
+#     }).groupby('group').sum().transpose()
+#
+#     return result.reset_index()
+
+
 def distr_pack_helper(bins, distr, index):
     distr_len = len(distr)
     bins = bins.sort_values(by='prio', ascending=False)
-    bins['acc_size'] = bins['size'].cumsum().astype('int32')
+    bins['acc_size'] = bins['size'].astype('int32').cumsum()
     size_windows = bins['acc_size'].rolling(window=2)
     res = []
     for size_window in size_windows:
         res.extend(calc_groups(size_window, distr_len))
 
-    result = pd.DataFrame(data={
+    intermediate = pd.DataFrame(data={
         'distr_val': distr,
-        'group': res
+        'group': res,
+        'data_read': 1
     }).groupby('group').sum().transpose()
 
-    result['index'] = index
-    result.set_index('index', inplace=True)
+    intermediate = sanitize_packing(intermediate)
+
+    result = pd.DataFrame(data={
+        'data_mem': 0 if len(intermediate) == 0 else intermediate.iloc[0]["data_mem"],
+        'data_sto': 0 if len(intermediate) == 0 else intermediate.iloc[0]["data_sto"],
+        'data_s3': 0 if len(intermediate) == 0 else intermediate.iloc[0]["data_s3"],
+        'data_stored_mem': 0 if len(intermediate) == 0 else intermediate.iloc[1]["data_mem"],
+        'data_stored_sto': 0 if len(intermediate) == 0 else intermediate.iloc[1]["data_sto"],
+        'data_stored_s3': 0 if len(intermediate) == 0 else intermediate.iloc[1]["data_s3"],
+    }, index=[index])
 
     return result
 
@@ -75,7 +101,7 @@ def model_distr_pack(bins, distr):
 
         res = pd.concat([res, next_]).fillna(0)
 
-    return sanitize_packing(res)
+    return res
 
 
 def model_make_scaling(p, n):
@@ -83,13 +109,16 @@ def model_make_scaling(p, n):
 
 
 def sanitize_packing(packed_df):
-    cols = {"data_mem", "data_sto", "data_s3"}
+    cols = ["data_mem", "data_sto", "data_s3"]
+    result = pd.DataFrame(columns=cols)
     for col in cols:
         if col not in packed_df.columns:
-            packed_df[col] = 0
-    packed_df.round(decimals=2)
+            result[col] = 0
+        else:
+            result[col] = packed_df[col]
+    result.round(decimals=2)
 
-    return packed_df
+    return result
 
 
 def calc_cost(time_df):

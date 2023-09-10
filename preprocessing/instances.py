@@ -12,6 +12,7 @@ dirname = os.path.dirname(__file__)
 
 pd.set_option('display.max_columns', 500)
 
+
 def storage_type(row):
     if pd.isna(row['storage_size']):
         return 'EBS'
@@ -33,6 +34,7 @@ def CPU_brand(row):
         return 'Intel'
     else:
         return '?'
+
 
 def aws_data_historical_new_load():
     dates = pd.read_csv(os.path.join(dirname, '../data/historical-data-times.csv'))
@@ -96,10 +98,10 @@ aws_data_historical_new_load()
 
 
 # ## aws_data_all
-
 def aws_data_cleanup(data):
     data.loc[pd.isna(data['clock_ghz']), ['loading_comment', 'clock_ghz']] = ["Clock speed unkown, assuming default value of 2.5 GHz", 2.5]
     return data
+
 
 def aws_data_normalize(data):
     # translation of transmute
@@ -128,6 +130,7 @@ def aws_data_normalize(data):
     data = data.join(commits.set_index('join.entry'), on='meta_join_entry', how='inner')
     return data
 
+
 def aws_data_enhance_ids(data):
     # use instance_prefix and instance_suffix columns instead of complicated regular expressions
     data['id_prefix'] = data['instance_prefix']
@@ -138,6 +141,7 @@ def aws_data_enhance_ids(data):
     data['id_number'] = pd.to_numeric(data['id_numstr'], errors='coerce').fillna(0)
     data = data.drop(columns=['instance_prefix', 'instance_suffix'])
     return data
+
 
 def add_slice_info(data, largest):
     def f(row):
@@ -165,12 +169,14 @@ def add_slice_info(data, largest):
         return(row)
     return f
 
+
 def aws_data_with_prefixes(data):
     grouped_data = data.groupby(['meta_join_entry', 'id_prefix'])
     # find largest per group
     largest = grouped_data['id_number'].idxmax()
     data = data.apply(add_slice_info(data, largest), axis=1)
     return data
+
 
 def aws_data_all_transform():
     data = aws_data_historical_new_load()
@@ -180,8 +186,8 @@ def aws_data_all_transform():
     data['meta_origin'] = 'instances.json'
     return data
 
-# aws_data_all_by_date
 
+# aws_data_all_by_date
 def aws_data_all_by_date_transform():
     data = aws_data_all_transform()
     data['meta_group'] = data['commit.date'].astype(str) + ' | ' + data['meta_join_entry'].astype(str) + \
@@ -189,8 +195,8 @@ def aws_data_all_by_date_transform():
     data.sort_values(by=['meta_join_entry', 'meta_origin'], ascending=False, inplace=True)
     return data
 
-# ui_instance_sets
 
+# ui_instance_sets
 def ui_instance_sets_transform(data):
     # do something
     return data
@@ -198,31 +204,36 @@ def ui_instance_sets_transform(data):
 #ui_instance_sets = ui_instance_sets_transform(aws_data_all_by_date)
 #ui_instance_sets
 
-# instSet_all
 
+# instSet_all
 input_instanceSet = '2020-06-02 | 102 | instances.json'
 
-def instSet_all_transform():
+
+def inst_set_all_transform():
     data = aws_data_all_by_date_transform()
     grouped_data = data.groupby(['meta_group']) 
     data = grouped_data.get_group(input_instanceSet)
     return data
 
-# instSet_long
 
+# instSet_long
 paper_inst_ids = ["c5n.18xlarge", "c5.24xlarge", "z1d.12xlarge", "c5d.24xlarge",
  "m5.24xlarge", "i3.16xlarge", "m5d.24xlarge", "m5n.24xlarge",
  "r5.24xlarge", "m5dn.24xlarge", "r5d.24xlarge", "r5n.24xlarge",
- "r5dn.24xlarge", "i3en.24xlarge", "x1e.32xlarge"]
+ "r5dn.24xlarge", "i3en.24xlarge", "x1e.32xlarge", "c5d.2xlarge"]
+
 
 def aws_data_filter_paper(data):
     return data.loc[data['id'].isin(paper_inst_ids)]
 
+
 # only implemented default filter
 instanceFilter = [aws_data_filter_paper]
 
+
 def calc_net_speed(row):
     return (row['network_Gbps'] if row['network_is_steady'] else row['id_slice_net']) / 8
+
 
 model_factors_bandwidth = {
     'RAM': 50,
@@ -232,9 +243,11 @@ model_factors_bandwidth = {
     'EBS': float('nan')
 }
 
+
 def model_calc_storage_speed(data):
     bws = data['storage_type'].map(model_factors_bandwidth) * data['id_slice_sto'] * data['id_slice_factor']
     return bws.fillna(data['calc_net_speed'])
+
 
 def model_with_speeds(data):
     data['calc_net_speed'] = data.apply(calc_net_speed, axis=1)
@@ -249,18 +262,19 @@ def model_with_speeds(data):
     data['calc_sto_spooling'] = data['storage_Gib'] - data['calc_sto_caching']
     return data
 
-def instSet_long_transform():
-    data = instSet_all_transform()
+
+def inst_set_long_transform():
+    data = inst_set_all_transform()
     for function in instanceFilter:
         data = function(data)
     data = data.dropna(axis=0)
     data = model_with_speeds(data)
     return data
 
-# instSet
 
-def instSet_transform():
-    data = instSet_long_transform()
+# instSet
+def inst_set_transform():
+    data = inst_set_long_transform()
     data.drop(list(data.filter(regex = '^meta')), axis = 1, inplace = True)
     data.drop(list(data.filter(regex = '^commit')), axis = 1, inplace = True)
     return data
