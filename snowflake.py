@@ -11,8 +11,8 @@ SNOWFLAKE_INSTANCE = inst_set_transform()
 SNOWFLAKE_INSTANCE = SNOWFLAKE_INSTANCE[SNOWFLAKE_INSTANCE["id"] == "c5d.2xlarge"]
 
 
-def snowset_warehouse_random(fraction=0.1):
-    sql_statement = text(f"SELECT warehouseId FROM snowset TABLESAMPLE SYSTEM ({fraction})")
+def snowset_warehouse_random(fraction=0.1, seed=0):
+    sql_statement = text(f"SELECT warehouseId FROM snowset TABLESAMPLE SYSTEM ({fraction}) REPEATABLE ({seed})")
     result_df = None
     with engine.connect() as conn:
         result_df = pd.DataFrame(conn.execute(sql_statement).fetchall(), columns=['warehouseId'])
@@ -20,7 +20,7 @@ def snowset_warehouse_random(fraction=0.1):
     return result_df
 
 
-def snowset_sample_warehouse(fraction=0.01):
+def snowset_sample_warehouse(fraction=0.01, seed=0):
     df_types = {
         'warehouse_id': 'int64',
         'query_id': 'int64',
@@ -45,7 +45,7 @@ def snowset_sample_warehouse(fraction=0.01):
        warehouseSize                    AS warehouse_size,
        durationtotal                    AS total_duration,
        perServerCores                    AS max_cores
-      FROM snowset TABLESAMPLE SYSTEM ({fraction})
+      FROM snowset TABLESAMPLE SYSTEM ({fraction}) REPEATABLE ({seed})
       WHERE warehouseSize = 1
     """)
 

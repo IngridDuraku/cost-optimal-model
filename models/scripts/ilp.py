@@ -24,7 +24,6 @@ def prepare_tests():
     return tests
 
 
-
 def calc_query_requests(queries, inst):
     query_requirements = []
     for q in queries:

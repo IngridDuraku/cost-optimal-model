@@ -1,10 +1,10 @@
 #!/bin/bash
 
 HOST="127.0.0.1"
-USER="<username>"
+USER="postgres"
 DATABASE="snowdb"
-PASSWORD="<password>"
-COMMAND_TEMPLATE="\\copy snowset from '<path_to_project>/cost-optimal-model/data/snowset_split/data_part_%d.csv' with (format csv, header true, delimiter ',');"
+PASSWORD="pw"
+COMMAND_TEMPLATE="\\copy snowset from '/home/lorenz/github/cost-optimal-model/data/snowset_split/data_part_%d.csv' with (format csv, header true, delimiter ',');"
 
 CONNECTION_URI="postgresql://$USER:$PASSWORD@$HOST/$DATABASE"
 

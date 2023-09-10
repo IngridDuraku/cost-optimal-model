@@ -9,17 +9,17 @@ def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale, par
 
     bins_cache = {
         'data_mem': pd.DataFrame(
-            data={'size': round(params['mem_request']), 'prio': inst['calc_mem_speed']}),
+            data={'size': inst['calc_mem_caching'].round(decimals=0), 'prio': inst['calc_mem_speed']}),
         'data_sto': pd.DataFrame(
-            data={'size': round(params['sto_request']), 'prio': inst['calc_sto_speed']}),
+            data={'size': inst['calc_sto_caching'].round(decimals=0), 'prio': inst['calc_sto_speed']}),
         'data_s3': pd.DataFrame(
             data={'size': [len(distr_cache['working'])] * len(inst), 'prio': inst['calc_net_speed']})
     }
     bins_spooling = {
         'data_mem': pd.DataFrame(
-            data={'size': round(params['mem_request']), 'prio': inst['calc_mem_speed']}),
+            data={'size': inst['calc_mem_spooling'].round(decimals=0), 'prio': inst['calc_mem_speed']}),
         'data_sto': pd.DataFrame(
-            data={'size': round(params['sto_request']), 'prio': inst['calc_sto_speed']}),
+            data={'size': inst['calc_sto_spooling'].round(decimals=0), 'prio': inst['calc_sto_speed']}),
         'data_s3': pd.DataFrame(data={'size': [len(distr_spooling)] * len(inst), 'prio': inst['calc_net_speed']})
     }
 

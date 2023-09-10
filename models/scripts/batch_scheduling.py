@@ -8,10 +8,11 @@ class Scheduler:
 
     def __init__(self, instances) -> None:
         instances['busy_cores'] = 0
-        instances['used_mem_caching'] = 0
-        instances['used_sto_caching'] = 0
-        instances['used_mem_spooling'] = 0
-        instances['used_sto_spooling'] = 0
+        instances['used_mem'] = 0
+        instances['used_mem'] = 0
+        instances['rw_mem'] = 0
+        instances['rw_sto'] = 0
+        instances['rw_s3'] = 0
         instances.set_index("id", inplace=True)
         self.instance_types = instances
         columns = instances.columns.to_numpy()
@@ -21,14 +22,11 @@ class Scheduler:
         pass
 
     def calc_time(self, query):
-
-        suitable_instance_types = suitable_instances(self.instance_types, query)
-
-        return calc_time(suitable_instance_types, query)
+        return calc_time(self.instance_types, query)
 
     def schedule_new_instance(self, type_id):
         instance = self.instance_types.loc[type_id].copy()
-        instance['query_runtimes'] = []
+        instance['query_cpu_times'] = []
         instance['id'] = type_id
         self.provisioned_instances.loc[str(self.provisioned_instance_id)] = instance
         self.provisioned_instance_id += 1
@@ -37,48 +35,79 @@ class Scheduler:
     def unschedule_instance(self, id):
         self.provisioned_instances.drop([id], inplace=True)
 
-    def schedule_query_cost_new_instance(self, type_id, runtime):
+    def schedule_query_cost_new_instance(self, type_id, query):
+        runtime = query["cpu_time"]
+        runtime += query["rw_mem"] / self.instance_types.loc[type_id, "calc_mem_speed"]
+        runtime += query["rw_sto"] / self.instance_types.loc[type_id, "calc_sto_speed"]
+        runtime += query["rw_s3"] / self.instance_types.loc[type_id, "calc_s3_speed"]
         return self.instance_types.loc[type_id, "cost_usdph"] * runtime / 3600
 
-    def schedule_query_cost_existing_instance(self, id, runtime):
-        runtimes = self.provisioned_instances.loc[id, "query_runtimes"]
-        prev_max = max(runtimes)
+    def schedule_query_cost_existing_instance(self, id, query):
+        instance = self.provisioned_instances.loc[id]
+        cpu_times = instance["query_cpu_times"]
 
-        # if the previous max runtime is smaller than the query's runtime, the cost is increased
-        return max(runtime - prev_max, 0) * self.provisioned_instances.loc[id, "cost_usdph"] / 3600
+        prev_max_cpu_time = max(cpu_times)
+        new_max_cpu_time = max(prev_max_cpu_time, query["cpu_time"])
 
-    def unschedule_query_cost(self, id, runtime):
-        runtimes = self.provisioned_instances.loc[id]["query_runtimes"]
-        runtimes.remove(runtime)
-        new_max = 0
-        if len(runtimes) > 0:
-            new_max = max(runtimes)
-        runtimes.append(runtime)
+        new_runtime = new_max_cpu_time
+        new_runtime += (query["rw_mem"] + instance["rw_mem"]) / self.instance_types.loc[id, "calc_mem_speed"]
+        new_runtime += (query["rw_sto"] + instance["rw_sto"]) / self.instance_types.loc[id, "calc_sto_speed"]
+        new_runtime += (query["rw_s3"] + instance["rw_s3"]) / self.instance_types.loc[id, "calc_s3_speed"]
 
-        # if the new max runtime is smaller than the query's runtime, the cost is decreased
-        return min(new_max - runtime, 0) * self.provisioned_instances.loc[id, "cost_usdph"] / 3600
+        old_runtime = prev_max_cpu_time
+        old_runtime += instance["rw_mem"] / self.instance_types.loc[id, "calc_mem_speed"]
+        old_runtime += instance["rw_sto"] / self.instance_types.loc[id, "calc_sto_speed"]
+        old_runtime += instance["rw_s3"] / self.instance_types.loc[id, "calc_s3_speed"]
 
-    def schedule_query(self, query, id, runtime):
-        self.provisioned_instances.loc[id, "busy_cores"] += query["per_server_cores"]
-        self.provisioned_instances.loc[id, 'used_mem_caching'] += query["mem_request"]
-        self.provisioned_instances.loc[id, 'used_sto_caching'] += query["mem_request"]
-        self.provisioned_instances.loc[id, 'used_mem_spooling'] += query["sto_request"]
-        self.provisioned_instances.loc[id, 'used_sto_spooling'] += query["sto_request"]
+        return (new_runtime - old_runtime) * instance["cost_usdph"] / 3600
 
-        runtimes = self.provisioned_instances.loc[id]["query_runtimes"]
-        runtimes.append(runtime)
+    def unschedule_query_cost(self, id, query):
+        instance = self.provisioned_instances.loc[id]
+        cpu_times = instance["query_cpu_times"]
 
-    def unschedule_query(self, query, id, runtime):
+        prev_max_cpu_time = max(cpu_times)
+        cpu_times.remove(query["cpu_time"])
+        new_max_cpu_time = 0
+        if len(cpu_times) > 0:
+            new_max_cpu_time = max(cpu_times)
+        cpu_times.append(query["cpu_time"])
+
+        new_runtime = new_max_cpu_time
+        new_runtime += (instance["rw_mem"] - query["rw_mem"]) / self.instance_types.loc[id, "calc_mem_speed"]
+        new_runtime += (instance["rw_sto"] - query["rw_sto"]) / self.instance_types.loc[id, "calc_sto_speed"]
+        new_runtime += (instance["rw_s3"] - query["rw_s3"]) / self.instance_types.loc[id, "calc_s3_speed"]
+
+        old_runtime = prev_max_cpu_time
+        old_runtime += instance["rw_mem"] / self.instance_types.loc[id, "calc_mem_speed"]
+        old_runtime += instance["rw_sto"] / self.instance_types.loc[id, "calc_sto_speed"]
+        old_runtime += instance["rw_s3"] / self.instance_types.loc[id, "calc_s3_speed"]
+
+        return (new_runtime - old_runtime) * instance["cost_usdph"] / 3600
+
+    def schedule_query(self, query, id):
+        self.provisioned_instances.loc[id, "busy_cores"] += query["used_cores"]
+        self.provisioned_instances.loc[id, 'used_mem'] += query["used_mem"]
+        self.provisioned_instances.loc[id, 'used_sto'] += query["used_sto"]
+        self.provisioned_instances.loc[id, 'rw_mem'] += query["rw_mem"]
+        self.provisioned_instances.loc[id, 'rw_sto'] += query["rw_sto"]
+        self.provisioned_instances.loc[id, 'rw_s3'] += query["rw_s3"]
+
+        cpu_times = self.provisioned_instances.loc[id]["query_cpu_times"]
+
+        cpu_times.append(query["cpu_time"])
+
+    def unschedule_query(self, query, id):
         self.provisioned_instances.loc[id, "busy_cores"] -= query["per_server_cores"]
-        self.provisioned_instances.loc[id, 'used_mem_caching'] -= query["mem_request"]
-        self.provisioned_instances.loc[id, 'used_sto_caching'] -= query["mem_request"]
-        self.provisioned_instances.loc[id, 'used_mem_spooling'] -= query["sto_request"]
-        self.provisioned_instances.loc[id, 'used_sto_spooling'] -= query["sto_request"]
+        self.provisioned_instances.loc[id, 'used_mem'] -= query["used_mem"]
+        self.provisioned_instances.loc[id, 'used_sto'] -= query["used_sto"]
+        self.provisioned_instances.loc[id, 'rw_mem'] -= query["rw_mem"]
+        self.provisioned_instances.loc[id, 'rw_sto'] -= query["rw_sto"]
+        self.provisioned_instances.loc[id, 'rw_s3'] -= query["rw_s3"]
 
-        runtimes = self.provisioned_instances.loc[id]["query_runtimes"]
-        runtimes.remove(runtime)
+        cpu_times = self.provisioned_instances.loc[id]["query_cpu_times"]
+        cpu_times.remove(query["cpu_time"])
 
-        if len(runtimes) == 0:
+        if len(cpu_times) == 0:
             self.unschedule_instance(id)
 
     def suitable_provisioned_instances(self, query):
@@ -90,39 +119,28 @@ class Scheduler:
 def suitable_instances(instances, query):
     number_cores = instances["calc_cpu_real"]
     number_busy_cores = instances["busy_cores"]
-    number_cores_needed = number_busy_cores + query["per_server_cores"]
+    number_cores_needed = number_busy_cores + query["used_cores"]
     cores_satisfied = number_cores >= number_cores_needed
 
-    mem_caching = instances["calc_mem_caching"]
-    used_mem_caching = instances["used_mem_caching"]
-    mem_caching_needed = used_mem_caching + query["mem_request"]
-    mem_caching_satisfied = mem_caching >= mem_caching_needed
+    mem = instances["calc_mem_caching"] + instances["calc_mem_spooling"]
+    used_mem = instances["used_mem"]
+    mem_needed = used_mem + query["used_mem"]
+    mem_satisfied = mem >= mem_needed
 
-    sto_caching = instances["calc_sto_caching"]
-    used_sto_caching = instances["used_sto_caching"]
-    sto_caching_needed = used_sto_caching + query["sto_request"]
-    sto_caching_satisfied = sto_caching >= sto_caching_needed
+    sto = instances["calc_sto_caching"] + instances["calc_sto_spooling"]
+    used_sto = instances["used_sto"]
+    sto_needed = used_sto + query["used_sto"]
+    sto_satisfied = sto >= sto_needed
 
-    mem_spooling = instances["calc_mem_spooling"]
-    used_mem_spooling = instances["used_mem_spooling"]
-    mem_spooling_needed = used_mem_spooling + query["mem_request"]
-    mem_spooling_satisfied = mem_spooling >= mem_spooling_needed
-
-    sto_spooling = instances["calc_sto_spooling"]
-    used_sto_spooling = instances["used_sto_spooling"]
-    sto_spooling_needed = used_sto_spooling + query["sto_request"]
-    sto_spooling_satisfied = sto_spooling >= sto_spooling_needed
-
-    return instances.loc[cores_satisfied & mem_caching_satisfied & sto_caching_satisfied & mem_spooling_satisfied & sto_spooling_satisfied]
+    return instances.loc[cores_satisfied & mem_satisfied & sto_satisfied]
     
 def calc_time(instances, query):
     distr_caching_precomputed = distr_maker(shape=query["cache_skew"], size=query["total_reads"])
 
     distr_cache = model_distr_split_fn(distr_caching_precomputed, query["first_read_from_s3"])
-
     spooling_read_sum = round(query["total_reads"] * query["spooling_fraction"])
     spooling_distr = [] if spooling_read_sum < 1 else distr_maker(shape=query["spooling_skew"], size=spooling_read_sum)
 
     scaling = 1
 
-    return calc_time_for_config_m4(instances, query, 1, distr_cache, spooling_distr, scaling)
+    return calc_time_for_config_m4(instances, 1, distr_cache, spooling_distr, scaling, query)
