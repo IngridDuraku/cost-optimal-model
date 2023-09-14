@@ -9,7 +9,7 @@ import json
 
 def prepare_tests(batch_size):
     snowflake_queries = pd.read_csv("./input/snowflake_queries.csv")
-    queries = snowflake_queries.sample(n=batch_size)
+    queries = snowflake_queries.sample(n=10)
     queries_dict = queries.to_dict("records")
     tests = [
         {
@@ -17,7 +17,7 @@ def prepare_tests(batch_size):
             "queries": queries_dict,
             "max_instances": batch_size,
             "max_queries_per_instance": batch_size,
-            "output_file": f"test_snowflake_{batch_size}.json"
+            "output_file": "test_snowflake.json"
         }
     ]
 
@@ -106,11 +106,20 @@ def run_ilp_model(query_req, available_instances, max_queries_per_instance, max_
     for i in range(instance_count):
         for q in range(query_count):
             model += bits[i * query_count + q] * query_req[q]["time_cpu"] + (
-                    query_req[q]["rw_mem"] / available_instances.iloc[i]["mem_bandwidth"] +
-                    query_req[q]["rw_sto"] / available_instances.iloc[i]["sto_bandwidth"] +
-                    query_req[q]["rw_s3"] / available_instances.iloc[i]["s3_bandwidth"]
-            ) * mip.xsum(aux_bits[i * query_count * query_count + q * query_count + p] for p in range(query_count)) <= \
-                     instance_runtimes[i]
+                    mip.xsum(
+                        query_req[p]["rw_mem"] * aux_bits[i * query_count * query_count + q * query_count + p]
+                        for p in range(query_count)
+                    ) / available_instances.iloc[i]["mem_bandwidth"] +
+                    mip.xsum(
+                        query_req[p]["rw_sto"] * aux_bits[i * query_count * query_count + q * query_count + p]
+                        for p in range(query_count)
+                    ) / available_instances.iloc[i]["sto_bandwidth"] +
+                    mip.xsum(
+                        query_req[p]["rw_s3"] * aux_bits[i * query_count * query_count + q * query_count + p]
+                        for p in range(query_count)
+                    ) / available_instances.iloc[i]["s3_bandwidth"]
+            ) <= instance_runtimes[i]
+
 
     for i in range(instance_count):
         for q in range(query_count):
@@ -177,8 +186,6 @@ def run_ilp_model(query_req, available_instances, max_queries_per_instance, max_
         "total_cost_separated": total_cost_separated
     }
 
-    print(instances_summary)
-
-    with open(f"./multitenancy_output/{output_file}", "w") as f:
+    with open(f"./ilp_bw_output/{output_file}", "w") as f:
         json.dump(final_result, fp=f, indent=2)
 

@@ -217,7 +217,7 @@ def inst_set_all_transform():
 paper_inst_ids = ["c5n.18xlarge", "c5.24xlarge", "z1d.12xlarge", "c5d.24xlarge",
  "m5.24xlarge", "i3.16xlarge", "m5d.24xlarge", "m5n.24xlarge",
  "r5.24xlarge", "m5dn.24xlarge", "r5d.24xlarge", "r5n.24xlarge",
- "r5dn.24xlarge", "i3en.24xlarge", "x1e.32xlarge", "c5d.2xlarge"]
+ "r5dn.24xlarge", "i3en.24xlarge", "x1e.32xlarge"]
 
 
 def aws_data_filter_paper(data):
