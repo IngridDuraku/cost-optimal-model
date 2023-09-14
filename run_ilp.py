@@ -9,10 +9,9 @@ import datetime
 
 if __name__ == "__main__":
     instances = inst_set_transform()
-    ilp_results = []
-    ilp_bw_results = []
-    batch_size = 2
-    for batch_size in range(3, 15):
+    for batch_size in range(2, 15):
+        ilp_results = []
+        ilp_bw_results = []
         for params in prepare_tests(batch_size):
             query_requests = calc_query_requests(params["queries"], instances)
             print(query_requests)

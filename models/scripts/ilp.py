@@ -11,7 +11,7 @@ def prepare_tests(batch_size):
     snowflake_queries = pd.read_csv("./input/snowflake_queries.csv")
     tests = []
     for seed in range(10):
-        queries = snowflake_queries.sample(n=batch_size, random_state=batch_size)
+        queries = snowflake_queries.sample(n=batch_size, random_state=seed)
         queries_dict = queries.to_dict("records")
         tests.append({
                 "test_id": "Test Snowflake",
