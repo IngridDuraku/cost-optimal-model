@@ -9,17 +9,17 @@ import json
 
 def prepare_tests(batch_size):
     snowflake_queries = pd.read_csv("./input/snowflake_queries.csv")
-    queries = snowflake_queries.sample(n=batch_size)
-    queries_dict = queries.to_dict("records")
-    tests = [
-        {
-            "test_id": "Test Snowflake",
-            "queries": queries_dict,
-            "max_instances": batch_size,
-            "max_queries_per_instance": batch_size,
-            "output_file": f"test_snowflake_{batch_size}.json"
-        }
-    ]
+    tests = []
+    for seed in range(10):
+        queries = snowflake_queries.sample(n=batch_size, random_state=batch_size)
+        queries_dict = queries.to_dict("records")
+        tests.append({
+                "test_id": "Test Snowflake",
+                "queries": queries_dict,
+                "max_instances": batch_size,
+                "max_queries_per_instance": batch_size,
+                "output_file": f"test_snowflake_{batch_size}_{seed}.json"
+            })
 
     return tests
 
@@ -177,8 +177,7 @@ def run_ilp_model(query_req, available_instances, max_queries_per_instance, max_
         "total_cost_separated": total_cost_separated
     }
 
-    print(instances_summary)
+    return final_result
 
-    with open(f"./multitenancy_output/{output_file}", "w") as f:
-        json.dump(final_result, fp=f, indent=2)
+
 

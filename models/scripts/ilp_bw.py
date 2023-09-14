@@ -56,7 +56,7 @@ def calc_available_instances(instances_info, max_instances):
     return available_instances
 
 
-def run_ilp_model(query_req, available_instances, max_queries_per_instance, max_instances, output_file):
+def run_ilp_bw_model(query_req, available_instances, max_queries_per_instance, max_instances, output_file):
     query_count = len(query_req)
     instance_count = len(available_instances)
 
@@ -186,6 +186,5 @@ def run_ilp_model(query_req, available_instances, max_queries_per_instance, max_
         "total_cost_separated": total_cost_separated
     }
 
-    with open(f"./ilp_bw_output/{output_file}", "w") as f:
-        json.dump(final_result, fp=f, indent=2)
+    return final_result
 

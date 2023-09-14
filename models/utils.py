@@ -123,7 +123,7 @@ def sanitize_packing(packed_df):
 def calc_cost(time_df):
     result = []
     for instance in time_df:
-        instance["stat_price_sum"] = round(instance["stat_time_sum"] * instance["cost_usdph"] / 3600, 3)
+        instance["stat_price_sum"] = round(instance["stat_time_sum"] * instance["cost_usdph"] / 3600, 10)
         result.append(instance.sort_values(by="stat_price_sum", ascending=True))
 
     return result
