@@ -9,14 +9,14 @@ class Scheduler:
     def __init__(self, instances) -> None:
         instances['busy_cores'] = 0
         instances['used_mem'] = 0
-        instances['used_mem'] = 0
+        instances['used_sto'] = 0
         instances['rw_mem'] = 0
         instances['rw_sto'] = 0
         instances['rw_s3'] = 0
         instances.set_index("id", inplace=True)
         self.instance_types = instances
         columns = instances.columns.to_numpy()
-        columns = np.append(columns, ['query_runtimes', 'id'])
+        columns = np.append(columns, ['query_cpu_times', 'id'])
         self.provisioned_instances = pd.DataFrame(columns=columns)
         self.provisioned_instance_id = 0
         pass
@@ -44,25 +44,27 @@ class Scheduler:
 
     def schedule_query_cost_existing_instance(self, id, query):
         instance = self.provisioned_instances.loc[id]
+        type_id = instance["id"]
         cpu_times = instance["query_cpu_times"]
 
         prev_max_cpu_time = max(cpu_times)
         new_max_cpu_time = max(prev_max_cpu_time, query["cpu_time"])
 
         new_runtime = new_max_cpu_time
-        new_runtime += (query["rw_mem"] + instance["rw_mem"]) / self.instance_types.loc[id, "calc_mem_speed"]
-        new_runtime += (query["rw_sto"] + instance["rw_sto"]) / self.instance_types.loc[id, "calc_sto_speed"]
-        new_runtime += (query["rw_s3"] + instance["rw_s3"]) / self.instance_types.loc[id, "calc_s3_speed"]
+        new_runtime += (query["rw_mem"] + instance["rw_mem"]) / self.instance_types.loc[type_id, "calc_mem_speed"]
+        new_runtime += (query["rw_sto"] + instance["rw_sto"]) / self.instance_types.loc[type_id, "calc_sto_speed"]
+        new_runtime += (query["rw_s3"] + instance["rw_s3"]) / self.instance_types.loc[type_id, "calc_s3_speed"]
 
         old_runtime = prev_max_cpu_time
-        old_runtime += instance["rw_mem"] / self.instance_types.loc[id, "calc_mem_speed"]
-        old_runtime += instance["rw_sto"] / self.instance_types.loc[id, "calc_sto_speed"]
-        old_runtime += instance["rw_s3"] / self.instance_types.loc[id, "calc_s3_speed"]
+        old_runtime += instance["rw_mem"] / self.instance_types.loc[type_id, "calc_mem_speed"]
+        old_runtime += instance["rw_sto"] / self.instance_types.loc[type_id, "calc_sto_speed"]
+        old_runtime += instance["rw_s3"] / self.instance_types.loc[type_id, "calc_s3_speed"]
 
         return (new_runtime - old_runtime) * instance["cost_usdph"] / 3600
 
     def unschedule_query_cost(self, id, query):
         instance = self.provisioned_instances.loc[id]
+        type_id = instance["id"]
         cpu_times = instance["query_cpu_times"]
 
         prev_max_cpu_time = max(cpu_times)
@@ -73,16 +75,44 @@ class Scheduler:
         cpu_times.append(query["cpu_time"])
 
         new_runtime = new_max_cpu_time
-        new_runtime += (instance["rw_mem"] - query["rw_mem"]) / self.instance_types.loc[id, "calc_mem_speed"]
-        new_runtime += (instance["rw_sto"] - query["rw_sto"]) / self.instance_types.loc[id, "calc_sto_speed"]
-        new_runtime += (instance["rw_s3"] - query["rw_s3"]) / self.instance_types.loc[id, "calc_s3_speed"]
+        new_runtime += (instance["rw_mem"] - query["rw_mem"]) / self.instance_types.loc[type_id, "calc_mem_speed"]
+        new_runtime += (instance["rw_sto"] - query["rw_sto"]) / self.instance_types.loc[type_id, "calc_sto_speed"]
+        new_runtime += (instance["rw_s3"] - query["rw_s3"]) / self.instance_types.loc[type_id, "calc_s3_speed"]
 
         old_runtime = prev_max_cpu_time
-        old_runtime += instance["rw_mem"] / self.instance_types.loc[id, "calc_mem_speed"]
-        old_runtime += instance["rw_sto"] / self.instance_types.loc[id, "calc_sto_speed"]
-        old_runtime += instance["rw_s3"] / self.instance_types.loc[id, "calc_s3_speed"]
+        old_runtime += instance["rw_mem"] / self.instance_types.loc[type_id, "calc_mem_speed"]
+        old_runtime += instance["rw_sto"] / self.instance_types.loc[type_id, "calc_sto_speed"]
+        old_runtime += instance["rw_s3"] / self.instance_types.loc[type_id, "calc_s3_speed"]
 
         return (new_runtime - old_runtime) * instance["cost_usdph"] / 3600
+    
+    def runtime(self, id):
+        instance = self.provisioned_instances.loc[id]
+        type_id = instance["id"]
+        cpu_times = instance["query_cpu_times"]
+
+        max_cpu_time = max(cpu_times)
+
+        runtime = max_cpu_time
+        runtime += instance["rw_mem"] / self.instance_types.loc[type_id, "calc_mem_speed"]
+        runtime += instance["rw_sto"] / self.instance_types.loc[type_id, "calc_sto_speed"]
+        runtime += instance["rw_s3"] / self.instance_types.loc[type_id, "calc_s3_speed"]
+
+        return runtime
+
+    def cost(self, id):
+        instance = self.provisioned_instances.loc[id]
+        type_id = instance["id"]
+        cpu_times = instance["query_cpu_times"]
+
+        max_cpu_time = max(cpu_times)
+
+        runtime = max_cpu_time
+        runtime += instance["rw_mem"] / self.instance_types.loc[type_id, "calc_mem_speed"]
+        runtime += instance["rw_sto"] / self.instance_types.loc[type_id, "calc_sto_speed"]
+        runtime += instance["rw_s3"] / self.instance_types.loc[type_id, "calc_s3_speed"]
+
+        return runtime * instance["cost_usdph"] / 3600
 
     def schedule_query(self, query, id):
         self.provisioned_instances.loc[id, "busy_cores"] += query["used_cores"]
@@ -97,7 +127,7 @@ class Scheduler:
         cpu_times.append(query["cpu_time"])
 
     def unschedule_query(self, query, id):
-        self.provisioned_instances.loc[id, "busy_cores"] -= query["per_server_cores"]
+        self.provisioned_instances.loc[id, "busy_cores"] -= query["used_cores"]
         self.provisioned_instances.loc[id, 'used_mem'] -= query["used_mem"]
         self.provisioned_instances.loc[id, 'used_sto'] -= query["used_sto"]
         self.provisioned_instances.loc[id, 'rw_mem'] -= query["rw_mem"]
@@ -136,7 +166,6 @@ def suitable_instances(instances, query):
     
 def calc_time(instances, query):
     distr_caching_precomputed = distr_maker(shape=query["cache_skew"], size=query["total_reads"])
-
     distr_cache = model_distr_split_fn(distr_caching_precomputed, query["first_read_from_s3"])
     spooling_read_sum = round(query["total_reads"] * query["spooling_fraction"])
     spooling_distr = [] if spooling_read_sum < 1 else distr_maker(shape=query["spooling_skew"], size=spooling_read_sum)

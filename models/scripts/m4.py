@@ -62,7 +62,6 @@ def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale, par
     )
 
     result["count"] = count
-    result["id"] = result["id_name"] + "/" + str(count)
     result["cost_usdph"] = (inst["cost_usdph"] * count).round(7)
 
     result["read_cache_load"] = sum(distr_cache["initial"]).round(2)
