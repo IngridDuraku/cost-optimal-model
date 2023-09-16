@@ -26,7 +26,7 @@ if __name__ == "__main__":
             )
             ilp_result["total_time"] = (datetime.datetime.now() - start_time).total_seconds()
             ilp_results.append(ilp_result)
-            with open(f"./ilp_output/test_snowflake_pre_test_{batch_size}.json", "w") as f:
+            with open(f"./ilp_output/test_snowflake_{batch_size}.json", "w") as f:
                 json.dump(ilp_results, fp=f, indent=2)
             start_time = datetime.datetime.now()
             ilp_bw_result = run_ilp_bw_model(
@@ -38,6 +38,6 @@ if __name__ == "__main__":
             )
             ilp_bw_result["total_time"] = (datetime.datetime.now() - start_time).total_seconds()
             ilp_bw_results.append(ilp_bw_result)
-            with open(f"./ilp_bw_output/test_snowflake_pre_test_{batch_size}.json", "w") as f:
+            with open(f"./ilp_bw_output/test_snowflake_test_{batch_size}.json", "w") as f:
                 json.dump(ilp_bw_results, fp=f, indent=2)
 

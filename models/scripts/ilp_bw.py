@@ -132,7 +132,7 @@ def run_ilp_bw_model(query_req, available_instances, max_queries_per_instance, m
                 model += aux_bits[i * query_count * query_count + q * query_count + p] >= bits[i * query_count + p] + \
                          bits[i * query_count + q] - 1
 
-    res = model.optimize(max_seconds=100)
+    res = model.optimize(max_seconds=200)
 
 
     if res.value == 5:
