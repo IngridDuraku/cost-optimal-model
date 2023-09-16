@@ -10,7 +10,7 @@ import json
 def prepare_tests(batch_size):
     snowflake_queries = pd.read_csv("./input/snowflake_queries.csv")
     tests = []
-    for seed in range(10):
+    for seed in range(7):
         queries = snowflake_queries.sample(n=batch_size, random_state=seed)
         queries_dict = queries.to_dict("records")
         tests.append({
@@ -123,7 +123,13 @@ def run_ilp_model(query_req, available_instances, max_queries_per_instance, max_
                 model += aux_bits[i * query_count * query_count + q * query_count + p] >= bits[i * query_count + p] + \
                          bits[i * query_count + q] - 1
 
-    res = model.optimize()
+    res = model.optimize(max_seconds=200)
+
+    if res.value == 5:
+        return {
+            "error": "Algorithm terminated. Not enough time.",
+            "status": res.value,
+        }
 
     total_instances = 0
     instances_summary = []
@@ -174,7 +180,8 @@ def run_ilp_model(query_req, available_instances, max_queries_per_instance, max_
         "instance_count": total_instances,
         "execution_details": instances_summary,
         "total_cost": total_cost,
-        "total_cost_separated": total_cost_separated
+        "total_cost_separated": total_cost_separated,
+        "status": res.value
     }
 
     return final_result

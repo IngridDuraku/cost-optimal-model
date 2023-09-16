@@ -132,7 +132,14 @@ def run_ilp_bw_model(query_req, available_instances, max_queries_per_instance, m
                 model += aux_bits[i * query_count * query_count + q * query_count + p] >= bits[i * query_count + p] + \
                          bits[i * query_count + q] - 1
 
-    res = model.optimize()
+    res = model.optimize(max_seconds=100)
+
+
+    if res.value == 5:
+        return {
+            "error": "Algorithm terminated. Not enough time.",
+            "status": res.value,
+        }
 
     total_instances = 0
     instances_summary = []
@@ -183,7 +190,8 @@ def run_ilp_bw_model(query_req, available_instances, max_queries_per_instance, m
         "instance_count": total_instances,
         "execution_details": instances_summary,
         "total_cost": total_cost,
-        "total_cost_separated": total_cost_separated
+        "total_cost_separated": total_cost_separated,
+        "status": res.value
     }
 
     return final_result

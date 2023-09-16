@@ -9,7 +9,7 @@ import datetime
 
 if __name__ == "__main__":
     instances = inst_set_transform()
-    for batch_size in range(2, 15):
+    for batch_size in range(5, 6):
         ilp_results = []
         ilp_bw_results = []
         for params in prepare_tests(batch_size):
@@ -26,6 +26,8 @@ if __name__ == "__main__":
             )
             ilp_result["total_time"] = (datetime.datetime.now() - start_time).total_seconds()
             ilp_results.append(ilp_result)
+            with open(f"./ilp_output/test_snowflake_pre_test_{batch_size}.json", "w") as f:
+                json.dump(ilp_results, fp=f, indent=2)
             start_time = datetime.datetime.now()
             ilp_bw_result = run_ilp_bw_model(
                 query_requests,
@@ -36,9 +38,6 @@ if __name__ == "__main__":
             )
             ilp_bw_result["total_time"] = (datetime.datetime.now() - start_time).total_seconds()
             ilp_bw_results.append(ilp_bw_result)
+            with open(f"./ilp_bw_output/test_snowflake_pre_test_{batch_size}.json", "w") as f:
+                json.dump(ilp_bw_results, fp=f, indent=2)
 
-        with open(f"./ilp_output/test_snowflake_{batch_size}.json", "w") as f:
-            json.dump(ilp_results, fp=f, indent=2)
-
-        with open(f"./ilp_bw_output/test_snowflake_{batch_size}.json", "w") as f:
-            json.dump(ilp_bw_results, fp=f, indent=2)
