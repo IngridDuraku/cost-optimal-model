@@ -1,10 +1,10 @@
 chunk_size = 40000
 
 
-def write_chunk(part, lines):
+def write_chunk(part, data_lines):
     with open('../../data/snowset_split/data_part_' + str(part) + '.csv', 'w') as f_out:
         f_out.write(header)
-        f_out.writelines(lines)
+        f_out.writelines(data_lines)
 
 
 if __name__ == "__main__":

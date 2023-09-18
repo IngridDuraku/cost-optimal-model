@@ -1,62 +1,9 @@
-from models.const import QUERY_REQ_COLS, AVAILABLE_INSTANCES_COLS
-from models.scripts.m4 import calc_time_m4
-from models.utils import calc_cost
-
 import mip
-import pandas as pd
-import json
+
+from models.const import ModelType
 
 
-def prepare_tests(batch_size):
-    snowflake_queries = pd.read_csv("./input/snowflake_queries.csv")
-    tests = []
-    for seed in range(7):
-        queries = snowflake_queries.sample(n=batch_size, random_state=seed)
-        queries_dict = queries.to_dict("records")
-        tests.append({
-                "test_id": "Test Snowflake",
-                "queries": queries_dict,
-                "max_instances": batch_size,
-                "max_queries_per_instance": batch_size,
-                "output_file": f"test_snowflake_{batch_size}_{seed}.json"
-            })
-
-    return tests
-
-
-
-def calc_query_requests(queries, inst):
-    query_requirements = []
-    for q in queries:
-        times = calc_time_m4(inst, q)
-        best = calc_cost(times)[0].iloc[0]
-        best["used_mem"] = best['used_mem_caching'] + best['used_mem_spooling']
-        best["used_sto"] = best['used_sto_caching'] + best['used_sto_spooling']
-        best["query_id"] = q["query_id"]
-        query_requirements.append(best[QUERY_REQ_COLS])
-
-    return query_requirements
-
-
-def calc_available_instances(instances_info, max_instances):
-    instances_info['mem'] = instances_info['calc_mem_caching'] + instances_info['calc_mem_spooling']
-    instances_info['sto'] = instances_info['calc_sto_caching'] + instances_info['calc_sto_spooling']
-    instances_info['cost_usdps'] = round(instances_info['cost_usdph'] / 3600, 6)
-    instances_info = instances_info.rename(columns={
-        'calc_cpu_real': 'cores',
-        'calc_mem_speed': 'mem_bandwidth',
-        'calc_sto_speed': 'sto_bandwidth',
-        'calc_s3_speed': 's3_bandwidth'
-    })[AVAILABLE_INSTANCES_COLS]
-
-    available_instances = instances_info
-    for i in range(1, max_instances):
-        available_instances = pd.concat([available_instances, instances_info], axis=0, ignore_index=True)
-
-    return available_instances
-
-
-def run_ilp_model(query_req, available_instances, max_queries_per_instance, max_instances, output_file):
+def run_ilp_model(query_req, available_instances, max_queries_per_instance, max_instances, model_type=ModelType.ILP):
     query_count = len(query_req)
     instance_count = len(available_instances)
 
@@ -105,12 +52,28 @@ def run_ilp_model(query_req, available_instances, max_queries_per_instance, max_
 
     for i in range(instance_count):
         for q in range(query_count):
-            model += bits[i * query_count + q] * query_req[q]["time_cpu"] + (
-                    query_req[q]["rw_mem"] / available_instances.iloc[i]["mem_bandwidth"] +
-                    query_req[q]["rw_sto"] / available_instances.iloc[i]["sto_bandwidth"] +
-                    query_req[q]["rw_s3"] / available_instances.iloc[i]["s3_bandwidth"]
-            ) * mip.xsum(aux_bits[i * query_count * query_count + q * query_count + p] for p in range(query_count)) <= \
-                     instance_runtimes[i]
+            if model_type == ModelType.ILP:
+                model += bits[i * query_count + q] * query_req[q]["time_cpu"] + (
+                        query_req[q]["rw_mem"] / available_instances.iloc[i]["mem_bandwidth"] +
+                        query_req[q]["rw_sto"] / available_instances.iloc[i]["sto_bandwidth"] +
+                        query_req[q]["rw_s3"] / available_instances.iloc[i]["s3_bandwidth"]
+                ) * mip.xsum(aux_bits[i * query_count * query_count + q * query_count + p] for p in range(query_count)) <= \
+                         instance_runtimes[i]
+            else:
+                model += bits[i * query_count + q] * query_req[q]["time_cpu"] + (
+                        mip.xsum(
+                            query_req[p]["rw_mem"] * aux_bits[i * query_count * query_count + q * query_count + p]
+                            for p in range(query_count)
+                        ) / available_instances.iloc[i]["mem_bandwidth"] +
+                        mip.xsum(
+                            query_req[p]["rw_sto"] * aux_bits[i * query_count * query_count + q * query_count + p]
+                            for p in range(query_count)
+                        ) / available_instances.iloc[i]["sto_bandwidth"] +
+                        mip.xsum(
+                            query_req[p]["rw_s3"] * aux_bits[i * query_count * query_count + q * query_count + p]
+                            for p in range(query_count)
+                        ) / available_instances.iloc[i]["s3_bandwidth"]
+                ) <= instance_runtimes[i]
 
     for i in range(instance_count):
         for q in range(query_count):

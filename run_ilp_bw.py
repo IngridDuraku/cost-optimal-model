@@ -1,19 +1,25 @@
-from models.const import TESTS, TSTS
-from models.scripts.ilp_bw import calc_query_requests, calc_available_instances, run_ilp_bw_model, prepare_tests
+import datetime
+import json
+
+from models.const import ModelType, TESTS
+from models.scripts.ilp import run_ilp_model
+from models.ilp_utils import calc_query_requests, calc_available_instances
 from preprocessing.instances import inst_set_transform
 
 
 if __name__ == "__main__":
     instances = inst_set_transform()
-    for params in prepare_tests(30):
+    for params in TESTS:
         query_requests = calc_query_requests(params["queries"], instances)
         available_instances = calc_available_instances(instances, max_instances=params["max_instances"])
-        run_ilp_bw_model(
+        start_time = datetime.datetime.now()
+        result = run_ilp_model(
             query_requests,
             available_instances,
             max_instances=params["max_instances"],
             max_queries_per_instance=params["max_queries_per_instance"],
-            output_file=params["output_file"]
+            model_type=ModelType.ILP_BW
         )
-
-    print("Done")
+        result["total_time"] = (datetime.datetime.now() - start_time).total_seconds()
+        with open(f"./output/ilp_bw/{params['output_file']}", "w") as f:
+            json.dump(result, fp=f, indent=2)

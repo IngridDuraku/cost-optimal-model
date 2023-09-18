@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from models.const import (CPU_H, DEFAULT_PARAMS)
+from models.const import DEFAULT_PARAMS
 from models.utils import model_distr_pack, distr_maker, model_distr_split_fn, model_make_scaling
 
 

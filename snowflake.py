@@ -180,27 +180,8 @@ def generate_params_from_snowflake(snowflake_data):
     })
 
 
-def calculate_times():
-    # query - snowflake_data (params) row
-    snowset_subset = snowset_sample_warehouse(0.01)
-    snowset_subset = snowset_subset[
-        snowset_subset["scan_s3"] != 0 &
-        (snowset_subset["scan_cache"] > (SNOWFLAKE_INSTANCE.iloc[0]["calc_sto_caching"] + SNOWFLAKE_INSTANCE.iloc[0][
-            "calc_mem_caching"]) * 1024 ** 3) &
-        (snowset_subset['scan_s3'] + snowset_subset['scan_cache'] > snowset_subset['warehouse_size'] * (300 * 1024 ** 3))
-        ]
-    snowset_subset = snowset_subset.apply(snowset_estimate_cache_skew, axis=1)
-    snowset_subset = snowset_subset.apply(snowset_spool_frac_estimation, axis=1)
-    snowset_subset = snowset_subset.apply(snowset_row_est_spool_skew, axis=1)
-    queries = generate_params_from_snowflake(snowset_subset)
-    for i in range(0, len(queries)):
-        print("Query ", queries.iloc[i]['warehouse_id'], ": ", queries.iloc[i])
-        result = calc_time_m4(SNOWFLAKE_INSTANCE, queries.iloc[i])
-        print(result)
-        # result.to_csv("./output/snowflake/query_" + str(queries.iloc[i]['query_id']) + ".csv")
-
-
 if __name__ == "__main__":
+    # generate snowflake queries
     snowset_subset = snowset_sample_warehouse(0.01)
     snowset_subset = snowset_subset[
         snowset_subset["scan_s3"] != 0 &

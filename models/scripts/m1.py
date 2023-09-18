@@ -1,8 +1,8 @@
-from ..const import CPU_H, TOTAL_READS
+from ..const import DEFAULT_PARAMS
 
 
-def calc_time_for_config(inst):
-    cpu_time = CPU_H / inst['vcpu.value.count']
-    scan_time = TOTAL_READS / (0.8 * inst['network_performance.value.Gib'])
+def calc_time_for_config(instances, params=DEFAULT_PARAMS):
+    cpu_time = params['cpu_h'] / instances['vcpu_count']
+    scan_time = params['total_reads'] / (0.8 * instances['network_Gbps'])
 
-    inst['execution_time_m1'] = scan_time + cpu_time
+    instances['execution_time_m1'] = scan_time + cpu_time

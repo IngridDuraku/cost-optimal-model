@@ -9,7 +9,7 @@ def distr_maker(shape, size):
     if size <= 1:
         return [size]
 
-    distr = zipfian.pmf(np.arange(1, size+1), shape, size+1)
+    distr = zipfian.pmf(np.arange(1, size + 1), shape, size + 1)
     normd = distr / np.sum(distr) * size
     return normd.tolist()
 
@@ -35,23 +35,6 @@ def calc_groups(sizes, distr_len):
         return []
     else:
         return [sizes.index[1]] * (min(sizes[1], distr_len) - sizes[0])
-
-
-# def distr_pack_helper(bins, distr):
-#     distr_len = len(distr)
-#     bins = bins.sort_values(by='prio', ascending=False)
-#     bins['acc_size'] = bins['size'].astype('int32').cumsum()
-#     size_windows = bins['acc_size'].rolling(window=2)
-#     res = []
-#     for size_window in size_windows:
-#         res.extend(calc_groups(size_window, distr_len))
-#
-#     result = pd.DataFrame(data={
-#         'distr_val': distr,
-#         'group': res
-#     }).groupby('group').sum().transpose()
-#
-#     return result.reset_index()
 
 
 def distr_pack_helper(bins, distr, index):
@@ -90,8 +73,10 @@ def model_distr_pack(bins, distr):
         next_ = distr_pack_helper(
             bins=pd.DataFrame(
                 data={
-                    'prio': [bins['data_mem']['prio'].iloc[i], bins['data_sto']['prio'].iloc[i], bins['data_s3']['prio'].iloc[i]],
-                    'size': [bins['data_mem']['size'].iloc[i], bins['data_sto']['size'].iloc[i], bins['data_s3']['size'].iloc[i]],
+                    'prio': [bins['data_mem']['prio'].iloc[i], bins['data_sto']['prio'].iloc[i],
+                             bins['data_s3']['prio'].iloc[i]],
+                    'size': [bins['data_mem']['size'].iloc[i], bins['data_sto']['size'].iloc[i],
+                             bins['data_s3']['size'].iloc[i]],
                 },
                 index=['data_mem', 'data_sto', 'data_s3']
             ),
