@@ -56,7 +56,7 @@ def calc_available_instances(instances_info, max_instances):
     return available_instances
 
 
-def run_ilp_bw_model(query_req, available_instances, max_queries_per_instance, max_instances, output_file):
+def run_ilp_bw_model(query_req, available_instances, max_queries_per_instance, max_instances, max_time):
     query_count = len(query_req)
     instance_count = len(available_instances)
 
@@ -132,7 +132,7 @@ def run_ilp_bw_model(query_req, available_instances, max_queries_per_instance, m
                 model += aux_bits[i * query_count * query_count + q * query_count + p] >= bits[i * query_count + p] + \
                          bits[i * query_count + q] - 1
 
-    res = model.optimize(max_seconds=200)
+    res = model.optimize(max_seconds=max_time)
 
 
     if res.value == 5:
@@ -149,7 +149,7 @@ def run_ilp_bw_model(query_req, available_instances, max_queries_per_instance, m
     for i in range(instance_count):
         if instance_runtimes[i].x == 0:
             continue
-        print(f"{available_instances.iloc[i]['id']} ({instance_runtimes[i].x})")
+        #print(f"{available_instances.iloc[i]['id']} ({instance_runtimes[i].x})")
         local_cost = instance_runtimes[i].x * available_instances.iloc[i]["cost_usdps"]
         i_details = {
             "instance_id": available_instances.iloc[i]['id'],
