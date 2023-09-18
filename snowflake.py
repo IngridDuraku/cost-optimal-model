@@ -3,7 +3,6 @@ import pandas as pd
 from sqlalchemy import text
 
 from preprocessing.instances import inst_set_transform
-from models.scripts.m4 import calc_time_m4
 from models.snowdb_conn import engine
 from models.utils import distr_maker, model_distr_pack
 

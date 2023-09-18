@@ -1,4 +1,4 @@
-CREATE TABLE QueryData (
+CREATE TABLE snowset (
     queryId BIGINT PRIMARY KEY,
     warehouseId BIGINT,
     databaseId TEXT,
