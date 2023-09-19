@@ -9,7 +9,7 @@ def distr_maker(shape, size):
     if size <= 1:
         return [size]
 
-    distr = zipfian.pmf(np.arange(1, size+1), shape, size)
+    distr = zipfian.pmf(np.arange(1, size + 1), shape, size)
     normd = distr / np.sum(distr) * size
     return normd.tolist()
 
@@ -40,19 +40,28 @@ def calc_groups(sizes, distr_len):
 def distr_pack_helper(bins, distr, index):
     distr_len = len(distr)
     bins = bins.sort_values(by='prio', ascending=False)
-    bins['acc_size'] = bins['size'].cumsum().astype('int32')
+    bins['acc_size'] = bins['size'].astype('int32').cumsum()
     size_windows = bins['acc_size'].rolling(window=2)
     res = []
     for size_window in size_windows:
         res.extend(calc_groups(size_window, distr_len))
 
-    result = pd.DataFrame(data={
+    intermediate = pd.DataFrame(data={
         'distr_val': distr,
-        'group': res
+        'group': res,
+        'data_read': 1
     }).groupby('group').sum().transpose()
 
-    result['index'] = index
-    result.set_index('index', inplace=True)
+    intermediate = sanitize_packing(intermediate)
+
+    result = pd.DataFrame(data={
+        'data_mem': 0 if len(intermediate) == 0 else intermediate.iloc[0]["data_mem"],
+        'data_sto': 0 if len(intermediate) == 0 else intermediate.iloc[0]["data_sto"],
+        'data_s3': 0 if len(intermediate) == 0 else intermediate.iloc[0]["data_s3"],
+        'data_stored_mem': 0 if len(intermediate) == 0 else intermediate.iloc[1]["data_mem"],
+        'data_stored_sto': 0 if len(intermediate) == 0 else intermediate.iloc[1]["data_sto"],
+        'data_stored_s3': 0 if len(intermediate) == 0 else intermediate.iloc[1]["data_s3"],
+    }, index=[index])
 
     return result
 
@@ -64,18 +73,19 @@ def model_distr_pack(bins, distr):
         next_ = distr_pack_helper(
             bins=pd.DataFrame(
                 data={
-                    'prio': [bins['data_mem']['prio'].iloc[i], bins['data_sto']['prio'].iloc[i], bins['data_s3']['prio'].iloc[i]],
-                    'size': [bins['data_mem']['size'].iloc[i], bins['data_sto']['size'].iloc[i], bins['data_s3']['size'].iloc[i]],
+                    'prio': [bins['data_mem']['prio'].iloc[i], bins['data_sto']['prio'].iloc[i],
+                             bins['data_s3']['prio'].iloc[i]],
+                    'size': [bins['data_mem']['size'].iloc[i], bins['data_sto']['size'].iloc[i],
+                             bins['data_s3']['size'].iloc[i]],
                 },
                 index=['data_mem', 'data_sto', 'data_s3']
             ),
             distr=distr,
             index=bins['data_mem'].index[i]
         )
+        res = pd.concat([res, next_], ignore_index=True).fillna(0)
 
-        res = pd.concat([res, next_]).fillna(0)
-
-    return sanitize_packing(res)
+    return res
 
 
 def model_make_scaling(p, n):
@@ -83,19 +93,22 @@ def model_make_scaling(p, n):
 
 
 def sanitize_packing(packed_df):
-    cols = {"data_mem", "data_sto", "data_s3"}
+    cols = ["data_mem", "data_sto", "data_s3"]
+    result = pd.DataFrame(columns=cols)
     for col in cols:
         if col not in packed_df.columns:
-            packed_df[col] = 0
-    packed_df.round(decimals=2)
+            result[col] = 0
+        else:
+            result[col] = packed_df[col]
+    result.round(decimals=2)
 
-    return packed_df
+    return result
 
 
 def calc_cost(time_df):
     result = []
     for instance in time_df:
-        instance["stat_price_sum"] = round(instance["stat_time_sum"] * instance["cost_usdph"] / 3600, 3)
+        instance["stat_price_sum"] = round(instance["stat_time_sum"] * instance["cost_usdph"] / 3600, 10)
         result.append(instance.sort_values(by="stat_price_sum", ascending=True))
 
     return result

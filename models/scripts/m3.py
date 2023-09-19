@@ -1,10 +1,10 @@
 import pandas as pd
 
-from models.const import CPU_H, CACHE_SKEW, FIRST_READ_FROM_S3, TOTAL_READS, SPOOLING_READ_SUM, SPOOLING_SKEW
+from models.const import DEFAULT_PARAMS
 from models.utils import model_distr_pack, distr_maker, model_distr_split_fn
 
 
-def calc_time_for_config_m3(inst, distr_cache, distr_spooling):
+def calc_time_for_config_m3(inst, distr_cache, distr_spooling, cpu_h):
     inst = inst.reset_index()
     bins_cache = {
         'data_mem': pd.DataFrame(data={'size': inst['calc_mem_caching'].round(decimals=0), 'prio': inst['calc_mem_speed']}),
@@ -21,7 +21,7 @@ def calc_time_for_config_m3(inst, distr_cache, distr_spooling):
     mem_read_distribution = model_distr_pack(bins_cache, distr_cache['working'])
     spool_read_distribution = model_distr_pack(bins_spooling, distr_spooling)
 
-    cpu_time = CPU_H / inst['vcpu_count']
+    cpu_time = cpu_h / inst['vcpu_count']
     inst['data_mem'] = mem_read_distribution['data_mem']
     inst['data_sto'] = mem_read_distribution['data_sto']
     inst['data_s3'] = mem_read_distribution['data_s3']
@@ -38,10 +38,10 @@ def calc_time_for_config_m3(inst, distr_cache, distr_spooling):
     return inst
 
 
-def calc_time_m3(instances):
-    distr_caching_precomputed = distr_maker(shape=CACHE_SKEW, size=TOTAL_READS)
-    distr_cache = model_distr_split_fn(distr_caching_precomputed, FIRST_READ_FROM_S3)
-    spooling_distr = distr_maker(shape=SPOOLING_SKEW, size=SPOOLING_READ_SUM)
-    instances = calc_time_for_config_m3(instances, distr_cache, spooling_distr)
+def calc_time_m3(instances, params=DEFAULT_PARAMS):
+    distr_caching_precomputed = distr_maker(shape=params['cache_skew'], size=params['total_reads'])
+    distr_cache = model_distr_split_fn(distr_caching_precomputed, params['first_read_from_s3'])
+    spooling_distr = distr_maker(shape=params['spooling_skew'], size=params['spooling_read_sum'])
+    instances = calc_time_for_config_m3(instances, distr_cache, spooling_distr, params['cpu_h'])
 
     return instances
