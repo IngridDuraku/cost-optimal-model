@@ -30,10 +30,10 @@ def calc_time_for_config_m3(inst, distr_cache, distr_spooling, cpu_h):
     inst['spooling_sto'] = spool_read_distribution['data_sto']
     inst['spooling_s3'] = spool_read_distribution['data_s3']
 
-    scan_time = (mem_read_distribution['data_mem'] + 2 * spool_read_distribution['data_mem'] / inst['calc_mem_speed']) \
-                + (mem_read_distribution['data_sto'] + 2 * spool_read_distribution['data_sto'] / inst['calc_sto_speed']) \
-                + mem_read_distribution['data_s3'] + 2 * spool_read_distribution['data_s3'] / inst['calc_net_speed']
-    inst['execution_time_m2'] = cpu_time + scan_time
+    scan_time = (mem_read_distribution['data_mem'] + 2 * spool_read_distribution['data_mem']) / inst['calc_mem_speed'] \
+                + (mem_read_distribution['data_sto'] + 2 * spool_read_distribution['data_sto']) / inst['calc_sto_speed'] \
+                + (mem_read_distribution['data_s3'] + 2 * spool_read_distribution['data_s3']) / inst['calc_net_speed']
+    inst['execution_time_m3'] = cpu_time + scan_time
 
     return inst
 
