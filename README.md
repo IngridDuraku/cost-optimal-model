@@ -111,7 +111,7 @@ Note: You can find/modify the testing data in the const.py file.
    ```
 - To run the experiment: 
 ```sh
-   python -m snowflake
+   python -m run_ilp_with_snowset
    ```
 
 Note: The results can be found in the /output folder after running each script.
