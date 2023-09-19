@@ -5,6 +5,7 @@ from models.utils import model_distr_pack, distr_maker, model_distr_split_fn, mo
 
 
 def calc_time_for_config_m4(inst, count, distr_cache, distr_spooling, scale, params):
+    inst = inst.reset_index()
     bins_cache = {
         'data_mem': pd.DataFrame(
             data={'size': inst['calc_mem_caching'].round(decimals=0), 'prio': inst['calc_mem_speed']}),
