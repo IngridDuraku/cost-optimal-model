@@ -1,0 +1,48 @@
+{
+  "instance_count": 1,
+  "execution_details": [
+    {
+      "instance_id": "z1d.12xlarge",
+      "runtime": 2375.3529999999996,
+      "cost": 2.9454377199999997,
+      "sto": 1800.0,
+      "mem": 384.0,
+      "cores": 24.0,
+      "mem_bandwidth": 50.0,
+      "sto_bandwidth": 4.0,
+      "s3_bandwidth": 2.5,
+      "queries": [
+        {
+          "id": 1,
+          "best_instance": "c5n.18xlarge/1",
+          "individual_runtime": 1964.6680000000001,
+          "individual_cost": 2.12184144,
+          "rw_mem": 1441.65,
+          "rw_sto": 0.0,
+          "rw_s3": 1358.35,
+          "time_cpu": 1800.0,
+          "used_mem": 192.0,
+          "used_sto": 0.0,
+          "used_cores": 1.0
+        },
+        {
+          "id": 2,
+          "best_instance": "c5n.18xlarge/1",
+          "individual_runtime": 1802.88,
+          "individual_cost": 1.9471104,
+          "rw_mem": 139.0,
+          "rw_sto": 0.0,
+          "rw_s3": 1.0,
+          "time_cpu": 1800.0,
+          "used_mem": 192.0,
+          "used_sto": 0.0,
+          "used_cores": 1.0
+        }
+      ]
+    }
+  ],
+  "total_cost": 2.9454377199999997,
+  "total_cost_separated": 4.0689518399999995,
+  "status": 0,
+  "total_time": 0.018324
+}

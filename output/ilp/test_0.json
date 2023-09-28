@@ -1,0 +1,35 @@
+{
+  "instance_count": 1,
+  "execution_details": [
+    {
+      "instance_id": "c5n.18xlarge",
+      "runtime": 2039.4544,
+      "cost": 2.202610752,
+      "sto": 0.0,
+      "mem": 192.0,
+      "cores": 36.0,
+      "mem_bandwidth": 50.0,
+      "sto_bandwidth": 12.5,
+      "s3_bandwidth": 10.0,
+      "queries": [
+        {
+          "id": 1,
+          "best_instance": "c5n.18xlarge/1",
+          "individual_runtime": 2039.4544,
+          "individual_cost": 2.202610752,
+          "rw_mem": 506.82,
+          "rw_sto": 0.0,
+          "rw_s3": 2293.1800000000003,
+          "time_cpu": 1800.0,
+          "used_mem": 192.0,
+          "used_sto": 0.0,
+          "used_cores": 1.0
+        }
+      ]
+    }
+  ],
+  "total_cost": 2.202610752,
+  "total_cost_separated": 2.202610752,
+  "status": 0,
+  "total_time": 0.420115
+}

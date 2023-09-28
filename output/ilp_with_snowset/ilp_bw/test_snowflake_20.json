@@ -1,0 +1,37 @@
+[
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 223.815672
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 210.49404
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 207.368768
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 232.328016
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 216.535127
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 216.711945
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 208.758162
+  }
+]

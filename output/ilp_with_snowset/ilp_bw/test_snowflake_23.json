@@ -1,0 +1,22 @@
+[
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 235.281066
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 231.364117
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 236.090115
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 223.500828
+  }
+]

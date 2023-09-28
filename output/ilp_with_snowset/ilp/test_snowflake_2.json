@@ -1,0 +1,390 @@
+[
+  {
+    "instance_count": 2,
+    "execution_details": [
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 0.01125,
+        "cost": 1.2149999999999999e-05,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 1.575797873158638e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.01125,
+            "individual_cost": 1.215e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.01125,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          }
+        ]
+      },
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 4.775,
+        "cost": 0.005157,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 4.215187917221786e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 4.775,
+            "individual_cost": 0.005157,
+            "rw_mem": 2.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 4.735,
+            "used_mem": 4.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          }
+        ]
+      }
+    ],
+    "total_cost": 0.00516915,
+    "total_cost_separated": 0.00516915,
+    "status": 0,
+    "total_time": 0.453864
+  },
+  {
+    "instance_count": 2,
+    "execution_details": [
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 0.05,
+        "cost": 5.4000000000000005e-05,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 8.853985570727499e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.05,
+            "individual_cost": 5.4e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.05,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 2.0
+          }
+        ]
+      },
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 0.035,
+        "cost": 3.7800000000000004e-05,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 9.074118052819604e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.035,
+            "individual_cost": 3.78e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.035,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 4.0
+          }
+        ]
+      }
+    ],
+    "total_cost": 9.180000000000001e-05,
+    "total_cost_separated": 9.18e-05,
+    "status": 0,
+    "total_time": 0.042467
+  },
+  {
+    "instance_count": 2,
+    "execution_details": [
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 0.08625,
+        "cost": 9.314999999999999e-05,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 6.650709468920886e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.08625,
+            "individual_cost": 9.315e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.08625,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          }
+        ]
+      },
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 2.44,
+        "cost": 0.0026352,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 8.248077989062916e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 2.44,
+            "individual_cost": 0.0026352,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 2.44,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 1.0
+          }
+        ]
+      }
+    ],
+    "total_cost": 0.00272835,
+    "total_cost_separated": 0.00272835,
+    "status": 0,
+    "total_time": 0.040911
+  },
+  {
+    "instance_count": 2,
+    "execution_details": [
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 48.87375,
+        "cost": 0.05278365,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 3.0771800893218094e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 48.873749999999994,
+            "individual_cost": 0.05278365,
+            "rw_mem": 8.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 48.71375,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          }
+        ]
+      },
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 0.075,
+        "cost": 8.1e-05,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 8.429558893626957e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.075,
+            "individual_cost": 8.1e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.075,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          }
+        ]
+      }
+    ],
+    "total_cost": 0.05286465,
+    "total_cost_separated": 0.05286465,
+    "status": 0,
+    "total_time": 0.041919
+  },
+  {
+    "instance_count": 1,
+    "execution_details": [
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 0.14,
+        "cost": 0.00015120000000000002,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 9.010641762081768e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.10375,
+            "individual_cost": 0.00011205,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.10375,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          },
+          {
+            "id": 4.700949213383595e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.14,
+            "individual_cost": 0.0001512,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.14,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 1.0
+          }
+        ]
+      }
+    ],
+    "total_cost": 0.00015120000000000002,
+    "total_cost_separated": 0.00026325,
+    "status": 0,
+    "total_time": 0.040254
+  },
+  {
+    "instance_count": 1,
+    "execution_details": [
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 3.75875,
+        "cost": 0.00405945,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 7.428773362190936e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 1.095,
+            "individual_cost": 0.0011826,
+            "rw_mem": 1.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 1.075,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          },
+          {
+            "id": 3.832680477632655e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 3.75875,
+            "individual_cost": 0.00405945,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 3.75875,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          }
+        ]
+      }
+    ],
+    "total_cost": 0.00405945,
+    "total_cost_separated": 0.00524205,
+    "status": 0,
+    "total_time": 0.040994
+  },
+  {
+    "instance_count": 1,
+    "execution_details": [
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 0.05,
+        "cost": 5.4000000000000005e-05,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 5.698808056710235e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.05,
+            "individual_cost": 5.4e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.05,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 1.0
+          },
+          {
+            "id": 6.664373078532442e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.045,
+            "individual_cost": 4.86e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.045,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          }
+        ]
+      }
+    ],
+    "total_cost": 5.4000000000000005e-05,
+    "total_cost_separated": 0.0001026,
+    "status": 0,
+    "total_time": 0.040366
+  }
+]

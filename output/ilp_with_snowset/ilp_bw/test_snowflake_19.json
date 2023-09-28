@@ -1,0 +1,340 @@
+[
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 229.175823
+  },
+  {
+    "instance_count": 4,
+    "execution_details": [
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 1.095,
+        "cost": 0.0011826,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 8.711269009283005e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.09,
+            "individual_cost": 9.72e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.09,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 2.0
+          },
+          {
+            "id": 1.630331447127001e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.255,
+            "individual_cost": 0.0002754,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.255,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 2.0
+          },
+          {
+            "id": 7.439723523109977e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.09,
+            "individual_cost": 9.72e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.09,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 1.0
+          },
+          {
+            "id": 7.428773362190936e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 1.095,
+            "individual_cost": 0.0011826,
+            "rw_mem": 1.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 1.075,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          },
+          {
+            "id": 5.965302065808413e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.06875,
+            "individual_cost": 7.425e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.06875,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          }
+        ]
+      },
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 0.27,
+        "cost": 0.00029160000000000004,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 9.074118052819604e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.035,
+            "individual_cost": 3.78e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.035,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 4.0
+          },
+          {
+            "id": 2.323802119206365e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.27,
+            "individual_cost": 0.0002916,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.27,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 2.0
+          },
+          {
+            "id": 4.376557646025256e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.08,
+            "individual_cost": 8.64e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.08,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 1.0
+          },
+          {
+            "id": 1.094820418587826e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.11,
+            "individual_cost": 0.0001188,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.11,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 1.0
+          },
+          {
+            "id": 5.638427080470626e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.04875,
+            "individual_cost": 5.265e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.04875,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          },
+          {
+            "id": 1.575797873158638e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.01125,
+            "individual_cost": 1.215e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.01125,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          }
+        ]
+      },
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 29.40625,
+        "cost": 0.03175875,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 2.9618183117096023e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 1.88,
+            "individual_cost": 0.0020304,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 1.88,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          },
+          {
+            "id": 2.9763793384907494e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 3.29625,
+            "individual_cost": 0.00355995,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 3.29625,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          },
+          {
+            "id": 4.149208693387982e+17,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 29.40625,
+            "individual_cost": 0.03175875,
+            "rw_mem": 2.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 29.36625,
+            "used_mem": 4.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          }
+        ]
+      },
+      {
+        "instance_id": "c5n.18xlarge",
+        "runtime": 0.21625,
+        "cost": 0.00023355,
+        "sto": 0.0,
+        "mem": 192.0,
+        "cores": 36.0,
+        "mem_bandwidth": 50.0,
+        "sto_bandwidth": 12.5,
+        "s3_bandwidth": 10.0,
+        "queries": [
+          {
+            "id": 8.853985570727499e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.05,
+            "individual_cost": 5.4e-05,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.05,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 2.0
+          },
+          {
+            "id": 1.5216996145454024e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.1975,
+            "individual_cost": 0.0002133,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.1975,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          },
+          {
+            "id": 4.528150777252549e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.09625,
+            "individual_cost": 0.00010395,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.09625,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          },
+          {
+            "id": 8.380620553018364e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.21625,
+            "individual_cost": 0.00023355,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.21625,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 8.0
+          },
+          {
+            "id": 4.700949213383595e+18,
+            "best_instance": "c5n.18xlarge/1",
+            "individual_runtime": 0.14,
+            "individual_cost": 0.0001512,
+            "rw_mem": 0.0,
+            "rw_sto": 0.0,
+            "rw_s3": 0.0,
+            "time_cpu": 0.14,
+            "used_mem": 2.0,
+            "used_sto": 0.0,
+            "used_cores": 1.0
+          }
+        ]
+      }
+    ],
+    "total_cost": 0.0334665,
+    "total_cost_separated": 0.04043115,
+    "status": 3,
+    "total_time": 210.417352
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 222.066205
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 208.276376
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 234.831462
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 207.001451
+  },
+  {
+    "error": "Algorithm terminated. Not enough time.",
+    "status": 5,
+    "total_time": 216.928316
+  }
+]
